@@ -12,15 +12,17 @@ import {
 } from "@react-three/rapier";
 
 const textureLoader = new THREE.TextureLoader();
+const baseUrl = import.meta.env.BASE_URL;
+
 const imageUrls = [
-  "/images/react2.webp",
-  "/images/next2.webp",
-  "/images/node2.webp",
-  "/images/express.webp",
-  "/images/mongo.webp",
-  "/images/mysql.webp",
-  "/images/typescript.webp",
-  "/images/javascript.webp",
+  `${baseUrl}images/react2.webp`,
+  `${baseUrl}images/next2.webp`,
+  `${baseUrl}images/node2.webp`,
+  `${baseUrl}images/express.webp`,
+  `${baseUrl}images/mongo.webp`,
+  `${baseUrl}images/mysql.webp`,
+  `${baseUrl}images/typescript.webp`,
+  `${baseUrl}images/javascript.webp`,
 ];
 const textures = imageUrls.map((url) => textureLoader.load(url));
 
@@ -199,7 +201,7 @@ const TechStack = () => {
           ))}
         </Physics>
         <Environment
-          files="/models/char_enviorment.hdr"
+          files={`${import.meta.env.BASE_URL}models/char_enviorment.hdr`}
           environmentIntensity={0.5}
           environmentRotation={[0, 4, 2]}
         />

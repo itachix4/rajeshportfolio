@@ -2,30 +2,32 @@ import { useState, useCallback } from "react";
 import "./styles/Work.css";
 import { MdArrowBack, MdArrowForward } from "react-icons/md";
 
+const baseUrl = import.meta.env.BASE_URL;
+
 const projects = [
   {
     title: "FinanceForTeens",
     category: "Making finance easier and more relatable for teenagers.",
     tools: "Brand Strategy, UI Design, Content Direction, Web Concept",
-    image: "/images/Solidx.png",
+    image: `${baseUrl}images/Solidx.png`,
   },
   {
     title: "Krish Veneer",
     category: "Building a stronger digital presence for a premium veneer business.",
     tools: "Branding, Social Media, Business Positioning, Website Direction",
-    image: "/images/radix.png",
+    image: `${baseUrl}images/radix.png`,
   },
   {
     title: "Personal Portfolio",
     category: "A digital space that reflects my work, mindset, and journey.",
     tools: "Next.js, UI/UX, Responsive Design, Personal Branding",
-    image: "/images/bond.png",
+    image: `${baseUrl}images/bond.png`,
   },
   {
     title: "Startup / Creative Experiments",
     category: "Concepts, visuals, and mini-projects exploring design.",
     tools: "Creative Direction, Design Systems, Experimentation, Prototyping",
-    image: "/images/sapphire.png",
+    image: `${baseUrl}images/sapphire.png`,
   },
 ];
 
