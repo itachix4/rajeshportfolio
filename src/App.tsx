@@ -1,24 +1,26 @@
-import { lazy, Suspense } from "react";
-import "./App.css";
+import { MotionConfig } from "motion/react";
+import HeroNavbar from "./components/NewHero/HeroNavbar";
+import HeroSection from "./components/NewHero/HeroSection";
+import MarqueeBand from "./components/NewSite/MarqueeBand";
+import AboutSection from "./components/NewSite/AboutSection";
+import ServicesSection from "./components/NewSite/ServicesSection";
+import WorkSection from "./components/NewSite/WorkSection";
+import CareerSection from "./components/NewSite/CareerSection";
+import TechMarquee from "./components/NewSite/TechMarquee";
+import ContactFooter from "./components/NewSite/ContactFooter";
 
-const CharacterModel = lazy(() => import("./components/Character"));
-const MainContainer = lazy(() => import("./components/MainContainer"));
-import { LoadingProvider } from "./context/LoadingProvider";
-
-const App = () => {
-  return (
-    <>
-      <LoadingProvider>
-        <Suspense>
-          <MainContainer>
-            <Suspense>
-              <CharacterModel />
-            </Suspense>
-          </MainContainer>
-        </Suspense>
-      </LoadingProvider>
-    </>
-  );
-};
+const App = () => (
+  <MotionConfig reducedMotion="user">
+    <HeroNavbar />
+    <HeroSection />
+    <MarqueeBand />
+    <AboutSection />
+    <ServicesSection />
+    <WorkSection />
+    <CareerSection />
+    <TechMarquee />
+    <ContactFooter />
+  </MotionConfig>
+);
 
 export default App;
