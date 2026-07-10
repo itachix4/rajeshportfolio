@@ -1,5 +1,8 @@
-/* Global styles for the rebuilt site — Tailwind v4 with Inter as the
-   default sans per the design spec, Instrument Serif for editorial accents */
+/* ============================================================
+   FOREST LUXE — dark cinematic theme
+   Canvas: near-black green · Type: cream serif display + Inter
+   Accents: moss glow (#A8C69F) · Signature: gold asterisk
+   ============================================================ */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap");
 @import "tailwindcss";
 
@@ -7,17 +10,28 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
     Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-serif: "Instrument Serif", Georgia, serif;
+
+  /* Semantic tokens */
+  --color-canvas: #0d120e;
+  --color-elevated: #141b15;
+  --color-cream: #f1eee3;
+  --color-cream-soft: #b9c2b4;
+  --color-cream-mute: #8c978a;
+  --color-moss: #a8c69f;
+  --color-moss-deep: #4d6d47;
+  --color-gold: #e4c580;
+  --color-paper: #f2efe6;
+  --color-ink: #1a231c;
 }
 
 html {
   scroll-behavior: smooth;
-  /* Keep anchored sections clear of the fixed header */
   scroll-padding-top: 4.5rem;
 }
 
 body {
-  background-color: #ffffff;
-  color: #171717;
+  background-color: #0d120e;
+  color: #f1eee3;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -29,11 +43,16 @@ body::after {
   inset: 0;
   z-index: 60;
   pointer-events: none;
-  opacity: 0.035;
+  opacity: 0.05;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* Editorial serif accent */
+/* Editorial serif display */
+.font-display {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
 .font-accent {
   font-family: var(--font-serif);
   font-style: italic;
@@ -41,20 +60,20 @@ body::after {
 }
 
 ::selection {
-  background: #eaece9;
-  color: #1c2e1e;
+  background: #a8c69f;
+  color: #0d120e;
 }
 
-/* Thin sage scrollbar */
+/* Thin moss scrollbar on dark */
 html {
   scrollbar-width: thin;
-  scrollbar-color: #8fa98b transparent;
+  scrollbar-color: #4d6d47 transparent;
 }
 ::-webkit-scrollbar {
   width: 8px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #8fa98b;
+  background: #4d6d47;
   border-radius: 8px;
 }
 ::-webkit-scrollbar-track {
@@ -75,29 +94,54 @@ html {
   animation: blink 1s step-end infinite;
 }
 
-/* Outlined kinetic type (tech marquee, watermark, cover numerals) */
+/* Outlined kinetic type */
 .text-outline {
   color: transparent;
-  -webkit-text-stroke: 1.5px #1c2e1e;
+  -webkit-text-stroke: 1.5px rgba(241, 238, 227, 0.85);
 }
 .text-outline-soft {
   color: transparent;
-  -webkit-text-stroke: 1px rgba(28, 46, 30, 0.25);
+  -webkit-text-stroke: 1px rgba(241, 238, 227, 0.22);
+}
+.text-outline-ink {
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(26, 35, 28, 0.3);
 }
 
-/* Keyboard focus visibility (WCAG) without affecting mouse users */
+/* Cinematic duotone treatment for the hero video */
+.video-duotone {
+  filter: grayscale(1) sepia(0.35) hue-rotate(55deg) saturate(0.85)
+    brightness(0.68) contrast(1.08);
+}
+
+/* Soft radial glow used behind hero content */
+.hero-glow {
+  background: radial-gradient(
+    ellipse 80% 60% at 20% 40%,
+    rgba(168, 198, 159, 0.14),
+    transparent 60%
+  );
+}
+
+/* Keyboard focus visibility (WCAG) */
 a:focus-visible,
 button:focus-visible {
-  outline: 2px solid #1c2e1e;
+  outline: 2px solid #a8c69f;
   outline-offset: 3px;
   border-radius: 4px;
+}
+.on-paper a:focus-visible,
+.on-paper button:focus-visible {
+  outline-color: #1a231c;
 }
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
-  .animate-blink {
+  .animate-blink,
+  .animate-ping,
+  .animate-pulse {
     animation: none;
   }
 }

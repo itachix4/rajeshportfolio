@@ -47,7 +47,7 @@ export const WordReveal = ({
           <span className="inline-block overflow-hidden align-bottom">
             <motion.span
               className={`inline-block ${
-                isAccent(word) ? "font-accent text-[#4D6D47]" : ""
+                isAccent(word) ? "font-accent text-[#A8C69F]" : ""
               }`}
               variants={{
                 hidden: { y: "110%" },
@@ -78,11 +78,11 @@ export const SectionHeading = ({
   label: string;
 }) => (
   <Reveal className="flex items-baseline gap-4 mb-10 md:mb-16">
-    <span className="text-sm md:text-base font-medium tracking-widest uppercase text-[#657464]">
+    <span className="text-sm md:text-base font-medium tracking-widest uppercase text-[#8C978A]">
       {index}
     </span>
-    <span className="h-px flex-none w-10 md:w-16 bg-[#1C2E1E]/20 self-center" />
-    <h2 className="text-3xl md:text-5xl font-medium tracking-tight text-[#1C2E1E]">
+    <span className="h-px flex-none w-10 md:w-16 bg-[#F1EEE3]/20 self-center" />
+    <h2 className="font-display text-4xl md:text-6xl tracking-tight text-[#F1EEE3]">
       {label}
     </h2>
   </Reveal>

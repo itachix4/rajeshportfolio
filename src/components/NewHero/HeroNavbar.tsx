@@ -30,20 +30,20 @@ const HeroNavbar = () => {
       <header
         className={`fixed top-0 inset-x-0 z-20 px-5 sm:px-8 py-4 sm:py-5 flex flex-row justify-between items-center transition-colors duration-300 ${
           scrolled && !isMobileMenuOpen
-            ? "bg-white/80 backdrop-blur-md shadow-sm shadow-emerald-950/5"
+            ? "bg-[#0D120E]/80 backdrop-blur-md border-b border-[#F1EEE3]/10"
             : "bg-transparent"
         }`}
       >
         <a href="#top" className="flex flex-row gap-3 items-center">
-          <span className="text-[21px] sm:text-[26px] tracking-tight text-black font-medium select-none">
+          <span className="text-[21px] sm:text-[26px] tracking-tight text-[#F1EEE3] font-medium select-none">
             Parth Parwani&reg;
           </span>
-          <span className="text-[25px] sm:text-[30px] text-black select-none tracking-[-0.02em] font-medium leading-none mb-1">
+          <span className="text-[25px] sm:text-[30px] text-[#E4C580] select-none tracking-[-0.02em] font-medium leading-none mb-1">
             &#10033;
           </span>
         </a>
 
-        <nav className="hidden lg:flex flex-row text-[23px] text-black">
+        <nav className="hidden lg:flex flex-row text-[23px] text-[#F1EEE3]">
           {NAV_LINKS.map((link, index) => (
             <span key={link.label} className="flex flex-row">
               <a
@@ -61,7 +61,7 @@ const HeroNavbar = () => {
 
         <a
           href={`mailto:${CONTACT_EMAIL}`}
-          className="hidden lg:inline text-[23px] text-black underline underline-offset-2 hover:opacity-60 transition-opacity"
+          className="hidden lg:inline text-[23px] text-[#F1EEE3] underline decoration-[#A8C69F] underline-offset-4 hover:opacity-60 transition-opacity"
         >
           Get in touch
         </a>
@@ -74,17 +74,17 @@ const HeroNavbar = () => {
           onClick={() => setIsMobileMenuOpen((open) => !open)}
         >
           <span
-            className={`w-6 h-[2px] bg-black transition-all duration-300 ${
+            className={`w-6 h-[2px] bg-[#F1EEE3] transition-all duration-300 ${
               isMobileMenuOpen ? "rotate-45 translate-y-[7px]" : ""
             }`}
           />
           <span
-            className={`w-6 h-[2px] bg-black transition-all duration-300 ${
+            className={`w-6 h-[2px] bg-[#F1EEE3] transition-all duration-300 ${
               isMobileMenuOpen ? "opacity-0" : ""
             }`}
           />
           <span
-            className={`w-6 h-[2px] bg-black transition-all duration-300 ${
+            className={`w-6 h-[2px] bg-[#F1EEE3] transition-all duration-300 ${
               isMobileMenuOpen ? "-rotate-45 -translate-y-[7px]" : ""
             }`}
           />
@@ -93,7 +93,7 @@ const HeroNavbar = () => {
 
       {/* Mobile navigation overlay */}
       <div
-        className={`lg:hidden fixed inset-0 z-[15] bg-white/95 backdrop-blur-sm transition-[opacity,visibility] duration-300 ${
+        className={`lg:hidden fixed inset-0 z-[15] bg-[#0D120E]/95 backdrop-blur-sm transition-[opacity,visibility] duration-300 ${
           isMobileMenuOpen
             ? "opacity-100 visible pointer-events-auto"
             : "opacity-0 invisible pointer-events-none"
@@ -104,7 +104,7 @@ const HeroNavbar = () => {
             <a
               key={link.label}
               href={link.target}
-              className="text-4xl text-black tracking-tight hover:opacity-60 transition-opacity"
+              className="font-display text-5xl text-[#F1EEE3] tracking-tight hover:text-[#A8C69F] transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               {link.label}
@@ -112,7 +112,7 @@ const HeroNavbar = () => {
           ))}
           <a
             href={`mailto:${CONTACT_EMAIL}`}
-            className="mt-6 text-2xl text-black underline underline-offset-2 hover:opacity-60 transition-opacity"
+            className="mt-6 text-2xl text-[#A8C69F] underline underline-offset-4 hover:opacity-60 transition-opacity"
             onClick={() => setIsMobileMenuOpen(false)}
           >
             Get in touch

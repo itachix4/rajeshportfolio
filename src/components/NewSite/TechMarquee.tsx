@@ -19,12 +19,12 @@ const Row = ({
       <span key={item} className="flex items-center" aria-hidden="true">
         <span
           className={`mx-5 md:mx-8 text-4xl md:text-6xl font-medium tracking-tight whitespace-nowrap ${
-            outlined ? "text-outline" : "text-[#1C2E1E]"
+            outlined ? "text-outline" : "text-[#F1EEE3]"
           }`}
         >
           {item}
         </span>
-        <span className="text-2xl md:text-3xl text-[#8FA98B]">&#10033;</span>
+        <span className="text-2xl md:text-3xl text-[#E4C580]">&#10033;</span>
       </span>
     ))}
   </Marquee>
@@ -34,9 +34,9 @@ const Row = ({
 const TechMarquee = () => {
   const reducedMotion = useReducedMotion();
   return (
-    <section className="bg-white py-20 md:py-28 overflow-hidden">
+    <section className="bg-[#0D120E] py-20 md:py-28 overflow-hidden">
       <Reveal className="max-w-7xl mx-auto px-6 mb-10 md:mb-14">
-        <h2 className="text-sm md:text-base font-medium tracking-widest uppercase text-[#657464]">
+        <h2 className="text-sm md:text-base font-medium tracking-widest uppercase text-[#8C978A]">
           05 — Tools & technologies
         </h2>
       </Reveal>
