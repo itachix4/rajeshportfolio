@@ -2,6 +2,14 @@ import { ArrowUpRight } from "lucide-react";
 import { Reveal, SectionHeading } from "./Reveal";
 import { CONTACT_EMAIL, PROJECTS } from "./data";
 
+/* Per-project cover tints — deliberate art, not just a fallback */
+const COVER_GRADIENTS = [
+  "from-[#EAECE9] to-[#C9D2C9]",
+  "from-[#E7EBE3] to-[#B9C8B6]",
+  "from-[#EDEDE7] to-[#CBD4C4]",
+  "from-[#E4E9E6] to-[#BFCEC4]",
+];
+
 const WorkSection = () => (
   <section id="work" className="bg-white">
     <div className="max-w-7xl mx-auto px-6 py-24 md:py-36">
@@ -14,16 +22,26 @@ const WorkSection = () => (
             className={index % 2 === 1 ? "md:mt-20" : ""}
           >
             <article className="group">
-              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#EAECE9] to-[#C9D2C9] aspect-[4/3]">
+              <div
+                className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${
+                  COVER_GRADIENTS[index % COVER_GRADIENTS.length]
+                } aspect-[4/3]`}
+              >
                 {/* Typographic cover shows if the screenshot is missing */}
                 <span
                   aria-hidden="true"
-                  className="absolute inset-0 flex items-center justify-center text-[6rem] md:text-[8rem] font-medium tracking-tight text-[#1C2E1E]/15 select-none"
+                  className="absolute inset-0 flex items-center justify-center font-accent text-[7rem] md:text-[9rem] text-[#1C2E1E]/20 select-none"
                 >
                   {project.title.charAt(0)}
-                  <span className="text-[3rem] md:text-[4rem] text-[#4D6D47]/30 ml-2">
+                  <span className="text-[3rem] md:text-[4rem] text-[#4D6D47]/35 ml-3 not-italic">
                     &#10033;
                   </span>
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="absolute bottom-4 right-6 text-outline-soft text-6xl md:text-7xl font-medium leading-none select-none"
+                >
+                  {String(index + 1).padStart(2, "0")}
                 </span>
                 <img
                   src={project.image}
@@ -34,9 +52,6 @@ const WorkSection = () => (
                   }}
                   className="relative w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                 />
-                <span className="absolute top-5 left-5 px-3.5 py-1.5 rounded-full bg-white/85 backdrop-blur-sm text-xs font-semibold tracking-widest text-[#1C2E1E]">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
               </div>
               <div className="pt-6 flex items-start justify-between gap-4">
                 <div>

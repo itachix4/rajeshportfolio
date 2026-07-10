@@ -1,4 +1,5 @@
 import { MotionConfig } from "motion/react";
+import Cursor from "./components/NewSite/Cursor";
 import HeroNavbar from "./components/NewHero/HeroNavbar";
 import HeroSection from "./components/NewHero/HeroSection";
 import MarqueeBand from "./components/NewSite/MarqueeBand";
@@ -11,6 +12,7 @@ import ContactFooter from "./components/NewSite/ContactFooter";
 
 const App = () => (
   <MotionConfig reducedMotion="user">
+    <Cursor />
     <HeroNavbar />
     <HeroSection />
     <MarqueeBand />

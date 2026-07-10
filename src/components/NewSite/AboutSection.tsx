@@ -7,6 +7,7 @@ const AboutSection = () => (
       <SectionHeading index="01" label="About" />
       <WordReveal
         text={ABOUT_STATEMENT}
+        accents={["ideas", "branding", "business"]}
         className="text-4xl md:text-6xl lg:text-7xl font-normal tracking-tight leading-[1.12] text-black max-w-5xl"
       />
       <Reveal delay={0.25} className="mt-12 flex flex-wrap gap-3">

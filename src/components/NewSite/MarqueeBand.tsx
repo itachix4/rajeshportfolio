@@ -8,9 +8,12 @@ const MarqueeBand = () => {
   const items = [...ROLES, "Based in India", "Open to ideas"];
 
   return (
-    <div className="bg-[#1C2E1E] text-[#FAFBF9] py-4 md:py-5 select-none overflow-hidden">
+    <div className="relative overflow-hidden py-8 md:py-10 bg-white">
       <p className="sr-only">{items.join(", ")}</p>
-      <div aria-hidden="true">
+      <div
+        aria-hidden="true"
+        className="bg-[#1C2E1E] text-[#FAFBF9] py-4 md:py-5 select-none -mx-4 -rotate-[1.5deg]"
+      >
       <Marquee speed={44} autoFill play={!reducedMotion}>
         {items.map((item) => (
           <span

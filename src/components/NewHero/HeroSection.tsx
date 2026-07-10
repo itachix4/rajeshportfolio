@@ -268,6 +268,18 @@ const HeroSection = () => {
               </AnimatePresence>
             </motion.div>
           </main>
+
+          {/* Scroll cue (desktop only) */}
+          <motion.div
+            aria-hidden="true"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.6, duration: 0.8 }}
+            className="hidden lg:flex items-center gap-2 absolute bottom-8 left-6 xl:left-[max(1.5rem,calc((100vw-80rem)/2+1.5rem))] text-xs tracking-widest uppercase text-[#657464] select-none"
+          >
+            <span className="w-px h-10 bg-[#1C2E1E]/25 animate-pulse" />
+            Scroll
+          </motion.div>
         </div>
       </div>
     </>

@@ -17,8 +17,14 @@ const ServicesSection = () => (
               <motion.article
                 whileHover={{ y: -6 }}
                 transition={{ type: "spring", stiffness: 300, damping: 24 }}
-                className="group h-full bg-white border border-[#F1F3F1] rounded-3xl p-8 md:p-12 flex flex-col gap-6 shadow-sm hover:shadow-xl hover:shadow-emerald-950/5 transition-shadow duration-300"
+                className="group relative h-full bg-white border border-[#F1F3F1] rounded-3xl p-8 md:p-12 flex flex-col gap-6 shadow-sm hover:shadow-xl hover:shadow-emerald-950/5 transition-shadow duration-300"
               >
+                <span
+                  aria-hidden="true"
+                  className="absolute top-7 right-8 text-outline-soft text-5xl md:text-6xl font-medium leading-none select-none"
+                >
+                  {String(index + 1).padStart(2, "0")}
+                </span>
                 <div className="w-14 h-14 rounded-2xl bg-[#EAECE9] text-[#1C2E1E] flex items-center justify-center group-hover:bg-[#1C2E1E] group-hover:text-white transition-colors duration-300">
                   <Icon size={26} strokeWidth={1.8} aria-hidden="true" />
                 </div>

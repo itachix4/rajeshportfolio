@@ -11,6 +11,7 @@ const ContactFooter = () => (
       </h2>
       <WordReveal
         text="Have an idea? Let's build it."
+        accents={["idea", "build"]}
         className="text-5xl md:text-7xl lg:text-8xl font-normal tracking-tight leading-[1.05] text-black max-w-4xl"
       />
       <Reveal delay={0.2} className="mt-12 flex flex-wrap items-center gap-6">
@@ -36,7 +37,17 @@ const ContactFooter = () => (
         </a>
       </Reveal>
 
-      <div className="mt-24 md:mt-32 pt-8 border-t border-[#F1F3F1] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-sm text-[#657464]">
+      {/* Signature watermark */}
+      <div
+        aria-hidden="true"
+        className="mt-20 md:mt-28 overflow-hidden select-none pointer-events-none"
+      >
+        <p className="text-outline-soft whitespace-nowrap text-center font-medium tracking-tight leading-none text-[13vw]">
+          PARTH PARWANI&reg;
+        </p>
+      </div>
+
+      <div className="mt-8 pt-8 border-t border-[#F1F3F1] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-sm text-[#657464]">
         <p>
           &copy; {new Date().getFullYear()} Parth Parwani &mdash; Entrepreneur,
           Designer &amp; Developer

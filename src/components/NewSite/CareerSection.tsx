@@ -3,7 +3,10 @@ import { Reveal } from "./Reveal";
 import { CAREER } from "./data";
 
 const CareerSection = () => (
-  <section id="career" className="bg-[#1C2E1E] text-[#FAFBF9]">
+  <section
+    id="career"
+    className="relative bg-[#1C2E1E] text-[#FAFBF9] rounded-t-[2.5rem] rounded-b-[2.5rem] md:rounded-t-[3rem] md:rounded-b-[3rem] -mt-6"
+  >
     <div className="max-w-7xl mx-auto px-6 py-24 md:py-36">
       <Reveal className="flex items-baseline gap-4 mb-14 md:mb-20">
         <span className="text-sm md:text-base font-medium tracking-widest uppercase text-[#8FA98B]">

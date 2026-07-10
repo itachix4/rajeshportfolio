@@ -20,15 +20,20 @@ export const Reveal = ({
   </motion.div>
 );
 
-/** Oversized statement that reveals word by word on scroll. */
+/** Oversized statement that reveals word by word on scroll.
+ *  Words listed in `accents` render in the italic serif accent face. */
 export const WordReveal = ({
   text,
   className,
+  accents = [],
 }: {
   text: string;
   className?: string;
+  accents?: string[];
 }) => {
   const words = text.split(" ");
+  const isAccent = (word: string) =>
+    accents.includes(word.toLowerCase().replace(/[^a-z']/g, ""));
   return (
     <motion.p
       className={className}
@@ -41,7 +46,9 @@ export const WordReveal = ({
         <Fragment key={index}>
           <span className="inline-block overflow-hidden align-bottom">
             <motion.span
-              className="inline-block"
+              className={`inline-block ${
+                isAccent(word) ? "font-accent text-[#4D6D47]" : ""
+              }`}
               variants={{
                 hidden: { y: "110%" },
                 visible: {
