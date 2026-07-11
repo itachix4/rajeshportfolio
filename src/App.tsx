@@ -1,4 +1,6 @@
 import { MotionConfig } from "motion/react";
+import { BuildModeProvider } from "./components/BuildModeProvider";
+import IntroSequence from "./components/IntroSequence";
 import HeroNavbar from "./components/NewHero/HeroNavbar";
 import HeroSection from "./components/NewHero/HeroSection";
 import MarqueeBand from "./components/NewSite/MarqueeBand";
@@ -10,22 +12,25 @@ import TechMarquee from "./components/NewSite/TechMarquee";
 import ContactFooter from "./components/NewSite/ContactFooter";
 
 const App = () => (
-  <MotionConfig reducedMotion="user">
-    <a className="skip-link" href="#main-content">
-      Skip to content
-    </a>
-    <HeroNavbar />
-    <main id="main-content">
-      <HeroSection />
-      <MarqueeBand />
-      <WorkSection />
-      <AboutSection />
-      <ServicesSection />
-      <CareerSection />
-      <TechMarquee />
-    </main>
-    <ContactFooter />
-  </MotionConfig>
+  <BuildModeProvider>
+    <MotionConfig reducedMotion="user">
+      <a className="skip-link" href="#main-content">
+        Skip to content
+      </a>
+      <IntroSequence />
+      <HeroNavbar />
+      <main id="main-content">
+        <HeroSection />
+        <MarqueeBand />
+        <WorkSection />
+        <AboutSection />
+        <ServicesSection />
+        <CareerSection />
+        <TechMarquee />
+      </main>
+      <ContactFooter />
+    </MotionConfig>
+  </BuildModeProvider>
 );
 
 export default App;

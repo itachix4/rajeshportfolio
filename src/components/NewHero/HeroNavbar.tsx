@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowUpRight, Menu, X } from "lucide-react";
+import { BUILD_MODES, useBuildMode } from "../buildMode";
 import { CONTACT_EMAIL, NAV_LINKS, PROFILE } from "../NewSite/data";
 
 const FOCUSABLE =
@@ -10,6 +11,7 @@ const HeroNavbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const headerRef = useRef<HTMLElement | null>(null);
+  const { mode, setMode } = useBuildMode();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -103,6 +105,22 @@ const HeroNavbar = () => {
           ))}
         </nav>
 
+        <div className="header-mode-switch" role="group" aria-label="Choose website perspective">
+          {BUILD_MODES.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={mode === item.id ? "is-active" : undefined}
+              aria-label={`${item.label} perspective`}
+              aria-pressed={mode === item.id}
+              title={item.label}
+              onClick={() => setMode(item.id)}
+            >
+              {item.shortLabel}
+            </button>
+          ))}
+        </div>
+
         <a className="header-cta" href={`mailto:${CONTACT_EMAIL}`}>
           Work with me
           <ArrowUpRight size={16} aria-hidden="true" />
@@ -148,6 +166,22 @@ const HeroNavbar = () => {
                 </motion.a>
               ))}
             </nav>
+            <div className="mobile-mode-switch" role="group" aria-label="Choose website perspective">
+              <span>Perspective</span>
+              <div>
+                {BUILD_MODES.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={mode === item.id ? "is-active" : undefined}
+                    aria-pressed={mode === item.id}
+                    onClick={() => setMode(item.id)}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="mobile-menu__footer">
               <p>Founder of ForgeLane</p>
               <a href={`mailto:${CONTACT_EMAIL}`} onClick={closeMenu}>

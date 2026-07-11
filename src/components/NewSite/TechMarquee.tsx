@@ -1,20 +1,43 @@
-import { useId, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { lazy, Suspense, useEffect, useId, useMemo, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ArrowDownRight, CircleDot } from "lucide-react";
+import { BuildMode, useBuildMode } from "../buildMode";
 import { WORKBENCH_MODES } from "./data";
 import { Reveal } from "./Reveal";
 
-type WorkbenchModeId = (typeof WORKBENCH_MODES)[number]["id"];
+const SkillConstellationScene = lazy(() => import("./SkillConstellationScene"));
+
+const MODE_ORDER: BuildMode[] = ["designer", "engineer", "founder"];
 
 const SkillWorkbench = () => {
-  const [modeId, setModeId] = useState<WorkbenchModeId>("engineer");
+  const { mode: modeId, setMode: setModeId } = useBuildMode();
   const [skillIndex, setSkillIndex] = useState(0);
+  const reduceMotion = useReducedMotion();
   const detailId = useId();
+  const orderedModes = MODE_ORDER.map(
+    (id) => WORKBENCH_MODES.find((mode) => mode.id === id) ?? WORKBENCH_MODES[0]
+  );
   const activeMode =
     WORKBENCH_MODES.find((mode) => mode.id === modeId) ?? WORKBENCH_MODES[0];
   const activeSkill = activeMode.skills[skillIndex] ?? activeMode.skills[0];
 
-  const selectMode = (nextMode: WorkbenchModeId) => {
+  const constellationNodes = useMemo(
+    () =>
+      activeMode.skills.flatMap((skill, index) =>
+        skill.tools.slice(0, 2).map((tool) => ({
+          tool,
+          skillIndex: index,
+          outcome: skill.name,
+        }))
+      ),
+    [activeMode]
+  );
+
+  useEffect(() => {
+    setSkillIndex(0);
+  }, [modeId]);
+
+  const selectMode = (nextMode: BuildMode) => {
     setModeId(nextMode);
     setSkillIndex(0);
   };
@@ -26,8 +49,8 @@ const SkillWorkbench = () => {
           <span>05 / Interactive skill map</span>
           <h2 id="workbench-title">Choose a lens. See the craft.</h2>
           <p>
-            Switch roles, select a capability and see how each tool connects to a
-            real outcome.
+            Switch perspectives, trace the constellation and see how each tool
+            connects to a real outcome.
           </p>
         </Reveal>
 
@@ -36,20 +59,20 @@ const SkillWorkbench = () => {
             <div className="workbench-bar__identity">
               <span>PP</span>
               <div>
-                <strong>Role mixer</strong>
-                <small>Three disciplines · one process</small>
+                <strong>Live build mode</strong>
+                <small>One portfolio · three perspectives</small>
               </div>
             </div>
             <div className="workbench-bar__status">
               <i aria-hidden="true" />
-              LIVE PROFILE
+              SYNCED SITE-WIDE
             </div>
           </header>
 
           <div className="workbench-mode-row">
             <p>Choose the lens</p>
             <div role="group" aria-label="Choose a skill lens">
-              {WORKBENCH_MODES.map((mode) => (
+              {orderedModes.map((mode) => (
                 <button
                   key={mode.id}
                   type="button"
@@ -61,6 +84,54 @@ const SkillWorkbench = () => {
                   {mode.label}
                 </button>
               ))}
+            </div>
+          </div>
+
+          <div className="constellation-stage">
+            <div className="constellation-visual">
+              <Suspense
+                fallback={
+                  <div className="constellation-fallback" aria-hidden="true">
+                    <span />
+                  </div>
+                }
+              >
+                <SkillConstellationScene
+                  mode={modeId}
+                  activeSkillIndex={skillIndex}
+                  reducedMotion={Boolean(reduceMotion)}
+                  onSelectSkill={setSkillIndex}
+                />
+              </Suspense>
+              <div className="constellation-core-label" aria-hidden="true">
+                <span>OUTCOME</span>
+                <strong>{activeMode.label}</strong>
+              </div>
+            </div>
+
+            <div className="constellation-map">
+              <div className="constellation-map__heading">
+                <span>Tools → capabilities</span>
+                <p>Tap a node or tool to inspect the craft behind it.</p>
+              </div>
+              <div className="constellation-node-list">
+                {constellationNodes.map((node, index) => (
+                  <button
+                    key={`${node.tool}-${index}`}
+                    type="button"
+                    className={skillIndex === node.skillIndex ? "is-active" : undefined}
+                    aria-pressed={skillIndex === node.skillIndex}
+                    onClick={() => setSkillIndex(node.skillIndex)}
+                  >
+                    <span>{node.tool}</span>
+                    <small>{node.outcome}</small>
+                  </button>
+                ))}
+              </div>
+              <div className="constellation-result" aria-live="polite">
+                <span>Current outcome</span>
+                <strong>{activeSkill.outcome}</strong>
+              </div>
             </div>
           </div>
 

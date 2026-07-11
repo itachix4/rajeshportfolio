@@ -1,8 +1,9 @@
 import { Canvas, ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import type { BuildMode } from "../buildMode";
 
-export type ForgeMode = "engineer" | "designer" | "founder";
+export type ForgeMode = BuildMode;
 
 type ForgeSceneProps = {
   mode: ForgeMode;
@@ -11,9 +12,9 @@ type ForgeSceneProps = {
 };
 
 const MODE_COLORS: Record<ForgeMode, string> = {
-  engineer: "#ff5a1f",
-  designer: "#ffae87",
-  founder: "#f1efe9",
+  engineer: "#64d2ff",
+  designer: "#ff6a2b",
+  founder: "#ff9f0a",
 };
 
 const stopAndCycle = (event: ThreeEvent<MouseEvent>, onCycle: () => void) => {
@@ -25,12 +26,12 @@ const EngineerCore = () => (
   <group>
     <mesh castShadow>
       <torusKnotGeometry args={[1.08, 0.3, 180, 28, 2, 3]} />
-      <meshStandardMaterial color="#ff5a1f" metalness={0.82} roughness={0.22} />
+      <meshStandardMaterial color="#64d2ff" metalness={0.82} roughness={0.22} />
     </mesh>
     <mesh scale={1.055}>
       <torusKnotGeometry args={[1.08, 0.3, 120, 18, 2, 3]} />
       <meshBasicMaterial
-        color="#ffd0bb"
+        color="#d7f4ff"
         transparent
         opacity={0.2}
         wireframe
@@ -227,7 +228,7 @@ const ForgeWorld = (props: ForgeSceneProps) => (
       angle={0.42}
       penumbra={0.8}
     />
-    <pointLight position={[-3, -2, 2]} color="#4b1b0d" intensity={14} />
+    <pointLight position={[-3, -2, 2]} color={MODE_COLORS[props.mode]} intensity={10} />
     <pointLight position={[0, 0, -2]} color="#ffffff" intensity={5} />
     <ParticleField mode={props.mode} />
     <OrbitRig mode={props.mode} reducedMotion={props.reducedMotion} />

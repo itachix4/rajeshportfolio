@@ -15,17 +15,17 @@ const AboutSection = () => (
       <div className="about-layout">
         <Reveal className="about-portrait">
           <img
-            src="/images/parth-portrait.jpg"
-            srcSet="/images/parth-portrait-960.jpg 720w, /images/parth-portrait.jpg 1350w"
+            src="/images/parth-digital-twin.jpg"
+            srcSet="/images/parth-digital-twin-960.jpg 720w, /images/parth-digital-twin.jpg 1086w"
             sizes="(max-width: 900px) calc(100vw - 32px), 42vw"
-            alt="Parth Parwani wearing a black jacket in a mirror portrait"
-            width="1350"
-            height="1800"
+            alt="AI-rendered digital twin of Parth Parwani in a black technical jacket"
+            width="1086"
+            height="1448"
             loading="lazy"
           />
           <div className="about-portrait__chrome" aria-hidden="true">
             <span>PARTH / 2026</span>
-            <span>PORTRAIT 01</span>
+            <span>DIGITAL TWIN 01</span>
           </div>
           <div className="about-portrait__caption">
             <span>17</span>

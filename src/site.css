@@ -3910,3 +3910,465 @@ a {
     transform: none;
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/*  Live perspective system + cinematic interaction layer                     */
+/* -------------------------------------------------------------------------- */
+
+html[data-build-mode="designer"] {
+  --mode-accent: #ff6a2b;
+  --orange: #ff6a2b;
+  --orange-bright: #ff9a68;
+  --orange-soft: #ffd0b8;
+}
+
+html[data-build-mode="engineer"] {
+  --mode-accent: #64d2ff;
+  --orange: #64d2ff;
+  --orange-bright: #9ee6ff;
+  --orange-soft: #d5f5ff;
+}
+
+html[data-build-mode="founder"] {
+  --mode-accent: #ff9f0a;
+  --orange: #ff9f0a;
+  --orange-bright: #ffbd57;
+  --orange-soft: #ffe2ad;
+}
+
+/* Opening sequence */
+.intro-sequence {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  overflow: hidden;
+  place-items: center;
+  background:
+    radial-gradient(circle at 50% 46%, color-mix(in srgb, var(--mode-accent) 16%, transparent), transparent 28%),
+    #000;
+  color: #f5f5f7;
+  clip-path: inset(0 0 0 0);
+}
+
+.intro-sequence__grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.18;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(circle at 50% 50%, black, transparent 72%);
+}
+
+.intro-sequence > button {
+  position: absolute;
+  z-index: 2;
+  top: max(18px, env(safe-area-inset-top));
+  right: 20px;
+  min-width: 88px;
+  min-height: 44px;
+  padding-inline: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #a1a1a6;
+  font-size: 0.7rem;
+  cursor: pointer;
+  backdrop-filter: blur(16px);
+}
+
+.intro-sequence > button:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.intro-sequence__center {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  text-align: center;
+}
+
+.intro-sequence__center > span {
+  display: grid;
+  width: 68px;
+  height: 68px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--mode-accent) 70%, white);
+  border-radius: 50%;
+  color: var(--mode-accent);
+  font-size: 1.12rem;
+  font-weight: 700;
+  box-shadow: 0 0 46px color-mix(in srgb, var(--mode-accent) 25%, transparent);
+}
+
+.intro-sequence h2 {
+  margin: 32px 0 0;
+  font-size: clamp(3rem, 7vw, 7.5rem);
+  font-weight: 600;
+  line-height: 0.94;
+  letter-spacing: -0.07em;
+}
+
+.intro-sequence p {
+  margin: 18px 0 0;
+  color: #86868b;
+  font-size: clamp(0.72rem, 1vw, 0.9rem);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.intro-sequence__progress {
+  position: absolute;
+  right: 0;
+  bottom: max(28px, env(safe-area-inset-bottom));
+  left: 0;
+  width: min(80vw, 460px);
+  height: 1px;
+  margin-inline: auto;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.intro-sequence__progress span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: left;
+  background: var(--mode-accent);
+}
+
+/* Navbar perspective switch */
+.header-mode-switch {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  padding: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.header-mode-switch button {
+  display: grid;
+  width: 38px;
+  min-height: 38px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #77777c;
+  font-size: 0.65rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.header-mode-switch button:hover {
+  color: #fff;
+}
+
+.header-mode-switch button.is-active {
+  background: var(--mode-accent);
+  color: #080808;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--mode-accent) 22%, transparent);
+}
+
+.header-mode-switch + .header-cta {
+  margin-left: 0;
+}
+
+.mobile-mode-switch {
+  display: none;
+}
+
+/* Skill constellation */
+.constellation-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(340px, 0.88fr);
+  min-height: 520px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.constellation-visual {
+  position: relative;
+  min-height: 520px;
+  overflow: hidden;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  background:
+    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--mode-accent) 12%, transparent), transparent 34%),
+    #0a0a0b;
+}
+
+.constellation-visual::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.2;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: radial-gradient(circle at 50% 50%, black, transparent 74%);
+  pointer-events: none;
+}
+
+.constellation-visual canvas {
+  position: absolute !important;
+  z-index: 1;
+  inset: 0;
+  touch-action: pan-y;
+}
+
+.constellation-core-label {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  width: 84px;
+  height: 84px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%);
+  border: 1px solid color-mix(in srgb, var(--mode-accent) 55%, transparent);
+  border-radius: 50%;
+  background: rgba(7, 7, 8, 0.68);
+  color: #fff;
+  pointer-events: none;
+  backdrop-filter: blur(10px);
+}
+
+.constellation-core-label span {
+  color: #77777c;
+  font-size: 0.46rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.constellation-core-label strong {
+  margin-top: 5px;
+  font-size: 0.65rem;
+  text-transform: capitalize;
+}
+
+.constellation-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.constellation-fallback span {
+  width: 110px;
+  aspect-ratio: 1;
+  border: 1px solid var(--mode-accent);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 48px color-mix(in srgb, var(--mode-accent) 7%, transparent),
+    0 0 70px color-mix(in srgb, var(--mode-accent) 20%, transparent);
+}
+
+.constellation-map {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: clamp(28px, 4vw, 52px);
+  background: #fff;
+  color: #1d1d1f;
+}
+
+.constellation-map__heading > span {
+  color: var(--mode-accent);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.constellation-map__heading p {
+  max-width: 420px;
+  margin: 13px 0 0;
+  color: #6e6e73;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.constellation-node-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 34px;
+}
+
+.constellation-node-list button {
+  display: flex;
+  min-width: 0;
+  min-height: 76px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 12px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  background: #fafafa;
+  color: #1d1d1f;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    transform 180ms var(--ease-out);
+}
+
+.constellation-node-list button:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--mode-accent) 55%, transparent);
+}
+
+.constellation-node-list button.is-active {
+  border-color: var(--mode-accent);
+  background: color-mix(in srgb, var(--mode-accent) 10%, white);
+}
+
+.constellation-node-list button span {
+  overflow-wrap: anywhere;
+  font-size: 0.76rem;
+  font-weight: 650;
+}
+
+.constellation-node-list button small {
+  margin-top: 5px;
+  color: #86868b;
+  font-size: 0.56rem;
+}
+
+.constellation-result {
+  margin-top: auto;
+  padding-top: 28px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.constellation-result span {
+  color: #86868b;
+  font-size: 0.58rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.constellation-result strong {
+  display: block;
+  max-width: 480px;
+  margin-top: 10px;
+  font-size: clamp(1.2rem, 1.8vw, 1.7rem);
+  line-height: 1.3;
+  letter-spacing: -0.035em;
+}
+
+@media (max-width: 1080px) {
+  .desktop-nav {
+    display: none;
+  }
+
+  .constellation-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .constellation-visual {
+    border-right: 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  .constellation-map {
+    min-height: 460px;
+  }
+}
+
+@media (max-width: 900px) {
+  .header-mode-switch {
+    display: none;
+  }
+
+  .mobile-mode-switch {
+    display: block;
+    margin-top: 42px;
+  }
+
+  .mobile-mode-switch > span {
+    color: #77777c;
+    font-size: 0.62rem;
+    font-weight: 650;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .mobile-mode-switch > div {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin-top: 13px;
+  }
+
+  .mobile-mode-switch button {
+    min-height: 48px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    color: #a1a1a6;
+    font-size: 0.7rem;
+  }
+
+  .mobile-mode-switch button.is-active {
+    border-color: var(--mode-accent);
+    background: var(--mode-accent);
+    color: #080808;
+  }
+}
+
+@media (max-width: 680px) {
+  .intro-sequence h2 {
+    font-size: clamp(2.8rem, 15vw, 4.8rem);
+  }
+
+  .intro-sequence__center > span {
+    width: 58px;
+    height: 58px;
+  }
+
+  .constellation-visual {
+    min-height: 420px;
+  }
+
+  .constellation-map {
+    min-height: 500px;
+    padding: 28px 20px;
+  }
+
+  .constellation-node-list {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .constellation-node-list button {
+    min-height: 70px;
+    padding-inline: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-sequence,
+  .constellation-node-list button {
+    transition-duration: 0.01ms !important;
+  }
+}

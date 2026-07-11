@@ -1,6 +1,7 @@
-import { lazy, Suspense, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { lazy, Suspense } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ArrowDownRight, ArrowUpRight, MousePointer2 } from "lucide-react";
+import { useBuildMode } from "../buildMode";
 import { PROFILE } from "../NewSite/data";
 import type { ForgeMode } from "./ForgeScene";
 
@@ -14,20 +15,20 @@ const FORGE_MODES: Array<{
   description: string;
 }> = [
   {
-    id: "engineer",
-    index: "01",
-    label: "Engineer",
-    title: "Complexity, disciplined.",
-    description:
-      "Typed systems, clean architecture and interactions engineered to stay fast.",
-  },
-  {
     id: "designer",
-    index: "02",
+    index: "01",
     label: "Designer",
     title: "Clarity with character.",
     description:
       "Identity, interface and motion shaped into one distinctive visual language.",
+  },
+  {
+    id: "engineer",
+    index: "02",
+    label: "Engineer",
+    title: "Complexity, disciplined.",
+    description:
+      "Typed systems, clean architecture and interactions engineered to stay fast.",
   },
   {
     id: "founder",
@@ -39,15 +40,38 @@ const FORGE_MODES: Array<{
   },
 ];
 
+const HERO_COPY: Record<
+  ForgeMode,
+  { first: string; accent: string; last: string; introduction: string }
+> = {
+  designer: {
+    first: "I shape the feeling.",
+    accent: "Then make it",
+    last: "unmistakable.",
+    introduction:
+      "I create identities, interfaces and motion systems that give ambitious ideas a distinct presence.",
+  },
+  engineer: {
+    first: "I make complexity",
+    accent: "feel simple",
+    last: "and fast.",
+    introduction:
+      "I engineer accessible, high-performance products with clean systems that are ready to grow.",
+  },
+  founder: {
+    first: "I turn ambitious",
+    accent: "ideas into",
+    last: "digital leverage.",
+    introduction:
+      "I connect positioning, product and execution so the work creates value beyond the launch.",
+  },
+};
+
 const HeroSection = () => {
   const reduceMotion = useReducedMotion();
-  const [mode, setMode] = useState<ForgeMode>("engineer");
+  const { mode, setMode, cycleMode } = useBuildMode();
   const activeMode = FORGE_MODES.find((item) => item.id === mode) ?? FORGE_MODES[0];
-
-  const cycleMode = () => {
-    const activeIndex = FORGE_MODES.findIndex((item) => item.id === mode);
-    setMode(FORGE_MODES[(activeIndex + 1) % FORGE_MODES.length].id);
-  };
+  const heroCopy = HERO_COPY[mode];
 
   return (
     <section id="top" className="hero-section" aria-labelledby="hero-title">
@@ -64,16 +88,20 @@ const HeroSection = () => {
             {PROFILE.availability}
           </motion.div>
 
-          <motion.h1
-            id="hero-title"
-            initial={reduceMotion ? false : { opacity: 0, y: 24 }}
-            animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, delay: 0.06 }}
-          >
-            I design the feeling.
-            <span>Then engineer</span>
-            the proof.
-          </motion.h1>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.h1
+              key={mode}
+              id="hero-title"
+              initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={reduceMotion ? undefined : { opacity: 0, y: -12 }}
+              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {heroCopy.first}
+              <span>{heroCopy.accent}</span>
+              {heroCopy.last}
+            </motion.h1>
+          </AnimatePresence>
 
           <motion.div
             className="hero-intro"
@@ -81,7 +109,17 @@ const HeroSection = () => {
             animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.14 }}
           >
-            <p>{PROFILE.introduction}</p>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.p
+                key={mode}
+                initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reduceMotion ? undefined : { opacity: 0 }}
+                transition={{ duration: 0.24 }}
+              >
+                {heroCopy.introduction}
+              </motion.p>
+            </AnimatePresence>
             <div className="hero-actions">
               <a className="button button--primary" href="#work">
                 Explore my work
