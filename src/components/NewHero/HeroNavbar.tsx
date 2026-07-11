@@ -90,7 +90,7 @@ const HeroNavbar = () => {
       <div className="site-header__inner portfolio-container">
         <a className="brand-mark" href="#top" aria-label={`${PROFILE.name}, home`}>
           <span className="brand-mark__monogram" aria-hidden="true">
-            PP
+            P.
           </span>
           <span className="brand-mark__name">Parth Parwani</span>
         </a>
@@ -104,7 +104,7 @@ const HeroNavbar = () => {
         </nav>
 
         <a className="header-cta" href={`mailto:${CONTACT_EMAIL}`}>
-          Let&apos;s talk
+          Work with me
           <ArrowUpRight size={16} aria-hidden="true" />
         </a>
 

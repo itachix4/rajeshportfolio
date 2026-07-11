@@ -7,8 +7,8 @@ const CareerSection = () => (
       <SectionHeading
         index="04"
         eyebrow="Journey"
-        title="Early chapter. Serious intent."
-        description="The timeline is short because I’m 17. The direction is clear because I’ve already started building."
+        title="Built early. Built seriously."
+        description="A short timeline with a clear direction: learn fast, make real things and keep raising the standard."
       />
 
       <ol className="journey-list">

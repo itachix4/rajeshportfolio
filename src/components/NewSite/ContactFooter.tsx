@@ -12,8 +12,8 @@ const ContactFooter = () => (
       <Reveal className="contact-heading">
         <span>06 / Start something</span>
         <h2>
-          Have an ambitious idea?
-          <em> Let&apos;s make it real.</em>
+          Let&apos;s build the thing
+          <em> they remember.</em>
         </h2>
       </Reveal>
 

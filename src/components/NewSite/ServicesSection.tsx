@@ -14,8 +14,8 @@ const ServicesSection = () => (
       <SectionHeading
         index="03"
         eyebrow="Capabilities"
-        title="From blurry thought to polished launch."
-        description="One connected process across brand, product design and engineering—so the final experience feels coherent, not assembled."
+        title="Strategy to shipping. One standard."
+        description="Brand, product design and engineering shaped together—so nothing feels assembled after the fact."
         inverted
       />
 

@@ -80,9 +80,9 @@ const WorkSection = () => (
     <div className="portfolio-container">
       <SectionHeading
         index="01"
-        eyebrow="The venture"
-        title="One studio. Full ownership."
-        description="ForgeLane is where I bring strategy, identity, interface and engineering together under one roof."
+        eyebrow="Featured venture"
+        title="ForgeLane. Built from zero."
+        description="The studio where strategy, identity, interface and engineering meet one uncompromising standard."
       />
 
       <div className="work-grid">

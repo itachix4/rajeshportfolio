@@ -24,7 +24,7 @@ const SkillWorkbench = () => {
       <div className="portfolio-container">
         <Reveal className="workbench-intro">
           <span>05 / Interactive skill map</span>
-          <h2 id="workbench-title">Don&apos;t read a skills list. Operate it.</h2>
+          <h2 id="workbench-title">Choose a lens. See the craft.</h2>
           <p>
             Switch roles, select a capability and see how each tool connects to a
             real outcome.
