@@ -1,125 +1,164 @@
-import { useEffect, useState } from "react";
-import { CONTACT_EMAIL } from "../NewSite/data";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { ArrowUpRight, Menu, X } from "lucide-react";
+import { CONTACT_EMAIL, NAV_LINKS, PROFILE } from "../NewSite/data";
 
-const NAV_LINKS = [
-  { label: "About", target: "#about" },
-  { label: "Work", target: "#work" },
-  { label: "Journey", target: "#career" },
-  { label: "Contact", target: "#contact" },
-];
+const FOCUSABLE =
+  'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-/**
- * Fixed site header. Gains a glass backdrop once the page is scrolled so
- * links stay readable over section content.
- */
 const HeroNavbar = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const headerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 24);
-    };
+    const onScroll = () => setScrolled(window.scrollY > 20);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const pageRegions = [
+      document.getElementById("main-content"),
+      document.querySelector<HTMLElement>(".contact-footer"),
+    ].filter((region): region is HTMLElement => Boolean(region));
+
+    document.body.style.overflow = "hidden";
+    pageRegions.forEach((region) => {
+      region.inert = true;
+      region.setAttribute("aria-hidden", "true");
+    });
+
+    const getFocusable = () =>
+      Array.from(headerRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? []).filter(
+        (element) => element.offsetParent !== null
+      );
+
+    const focusTimer = window.setTimeout(() => {
+      const menuLink = headerRef.current?.querySelector<HTMLElement>(
+        "#mobile-navigation a"
+      );
+      menuLink?.focus();
+    }, 30);
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+      const focusable = getFocusable();
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.clearTimeout(focusTimer);
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+      pageRegions.forEach((region) => {
+        region.inert = false;
+        region.removeAttribute("aria-hidden");
+      });
+      previouslyFocused?.focus();
+    };
+  }, [menuOpen]);
+
+  const closeMenu = () => setMenuOpen(false);
+
   return (
-    <div className="font-sans antialiased">
-      <header
-        className={`fixed top-0 inset-x-0 z-20 px-5 sm:px-8 py-4 sm:py-5 flex flex-row justify-between items-center transition-colors duration-300 ${
-          scrolled && !isMobileMenuOpen
-            ? "bg-[#0D120E]/80 backdrop-blur-md border-b border-[#F1EEE3]/10"
-            : "bg-transparent"
-        }`}
-      >
-        <a href="#top" className="flex flex-row gap-3 items-center">
-          <span className="text-[21px] sm:text-[26px] tracking-tight text-[#F1EEE3] font-medium select-none">
-            Parth Parwani&reg;
+    <header
+      ref={headerRef}
+      className={`site-header${scrolled || menuOpen ? " site-header--active" : ""}`}
+    >
+      <div className="site-header__inner portfolio-container">
+        <a className="brand-mark" href="#top" aria-label={`${PROFILE.name}, home`}>
+          <span className="brand-mark__monogram" aria-hidden="true">
+            PP
           </span>
-          <span className="text-[25px] sm:text-[30px] text-[#E4C580] select-none tracking-[-0.02em] font-medium leading-none mb-1">
-            &#10033;
-          </span>
+          <span className="brand-mark__name">Parth Parwani</span>
         </a>
 
-        <nav className="hidden lg:flex flex-row text-[23px] text-[#F1EEE3]">
-          {NAV_LINKS.map((link, index) => (
-            <span key={link.label} className="flex flex-row">
-              <a
-                href={link.target}
-                className="hover:opacity-60 transition-opacity"
-              >
-                {link.label}
-              </a>
-              {index < NAV_LINKS.length - 1 && (
-                <span className="opacity-40">,&nbsp;</span>
-              )}
-            </span>
+        <nav className="desktop-nav" aria-label="Primary navigation">
+          {NAV_LINKS.map((link) => (
+            <a key={link.target} href={link.target}>
+              {link.label}
+            </a>
           ))}
         </nav>
 
-        <a
-          href={`mailto:${CONTACT_EMAIL}`}
-          className="hidden lg:inline text-[23px] text-[#F1EEE3] underline decoration-[#A8C69F] underline-offset-4 hover:opacity-60 transition-opacity"
-        >
-          Get in touch
+        <a className="header-cta" href={`mailto:${CONTACT_EMAIL}`}>
+          Let&apos;s talk
+          <ArrowUpRight size={16} aria-hidden="true" />
         </a>
 
         <button
           type="button"
-          className="lg:hidden relative z-10 flex flex-col justify-center items-center w-11 h-11 -mr-2 gap-[5px]"
-          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-          aria-expanded={isMobileMenuOpen}
-          onClick={() => setIsMobileMenuOpen((open) => !open)}
+          className="menu-toggle"
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-controls="mobile-navigation"
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((open) => !open)}
         >
-          <span
-            className={`w-6 h-[2px] bg-[#F1EEE3] transition-all duration-300 ${
-              isMobileMenuOpen ? "rotate-45 translate-y-[7px]" : ""
-            }`}
-          />
-          <span
-            className={`w-6 h-[2px] bg-[#F1EEE3] transition-all duration-300 ${
-              isMobileMenuOpen ? "opacity-0" : ""
-            }`}
-          />
-          <span
-            className={`w-6 h-[2px] bg-[#F1EEE3] transition-all duration-300 ${
-              isMobileMenuOpen ? "-rotate-45 -translate-y-[7px]" : ""
-            }`}
-          />
+          {menuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
         </button>
-      </header>
-
-      {/* Mobile navigation overlay */}
-      <div
-        className={`lg:hidden fixed inset-0 z-[15] bg-[#0D120E]/95 backdrop-blur-sm transition-[opacity,visibility] duration-300 ${
-          isMobileMenuOpen
-            ? "opacity-100 visible pointer-events-auto"
-            : "opacity-0 invisible pointer-events-none"
-        }`}
-      >
-        <nav className="h-full flex flex-col justify-center items-start gap-6 px-8">
-          {NAV_LINKS.map((link) => (
-            <a
-              key={link.label}
-              href={link.target}
-              className="font-display text-5xl text-[#F1EEE3] tracking-tight hover:text-[#A8C69F] transition-colors"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              {link.label}
-            </a>
-          ))}
-          <a
-            href={`mailto:${CONTACT_EMAIL}`}
-            className="mt-6 text-2xl text-[#A8C69F] underline underline-offset-4 hover:opacity-60 transition-opacity"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            Get in touch
-          </a>
-        </nav>
       </div>
-    </div>
+
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            id="mobile-navigation"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Site navigation"
+            className="mobile-menu"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <nav className="mobile-menu__nav" aria-label="Mobile navigation">
+              {NAV_LINKS.map((link, index) => (
+                <motion.a
+                  key={link.target}
+                  href={link.target}
+                  onClick={closeMenu}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.28, delay: index * 0.04 }}
+                >
+                  <span>0{index + 1}</span>
+                  {link.label}
+                </motion.a>
+              ))}
+            </nav>
+            <div className="mobile-menu__footer">
+              <p>Founder of ForgeLane</p>
+              <a href={`mailto:${CONTACT_EMAIL}`} onClick={closeMenu}>
+                {CONTACT_EMAIL}
+                <ArrowUpRight size={18} aria-hidden="true" />
+              </a>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </header>
   );
 };
 

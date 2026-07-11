@@ -1,102 +1,118 @@
+import type { PointerEvent as ReactPointerEvent } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { Reveal, SectionHeading } from "./Reveal";
-import { CONTACT_EMAIL, PROJECTS } from "./data";
+import { CONTACT_EMAIL, Project, PROJECTS } from "./data";
 
-/* Per-project cover tints — deliberate art, not just a fallback */
-const COVER_GRADIENTS = [
-  "from-[#16211A] to-[#22301F]",
-  "from-[#141D18] to-[#1D2E27]",
-  "from-[#181F16] to-[#28331E]",
-  "from-[#131C19] to-[#203028]",
-];
+const ProjectVisual = () => (
+  <div className="project-visual project-visual--orange" aria-hidden="true">
+    <div className="project-visual__chrome">
+      <span>FORGELANE / DIGITAL STUDIO</span>
+      <span>FL—01</span>
+    </div>
+
+    <div className="forge-case">
+      <div className="forge-case__shadow" />
+      <div className="forge-case__screen">
+        <div className="forge-case__nav">
+          <span>FORGELANE®</span>
+          <i />
+          <span>MAKE IT DISTINCT</span>
+        </div>
+        <div className="forge-case__mark">
+          FORGE
+          <span>LANE</span>
+        </div>
+        <div className="forge-case__footer">
+          <span>STRATEGY</span>
+          <span>DESIGN</span>
+          <span>BUILD</span>
+        </div>
+      </div>
+      <div className="forge-case__stamp">
+        <span>F</span>
+        <small>STUDIO / 2026</small>
+      </div>
+    </div>
+
+    <div className="project-visual__status">
+      <span />
+      ACTIVE VENTURE
+    </div>
+  </div>
+);
+
+const ProjectLinks = ({ project }: { project: Project }) => {
+  const inquiryHref = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
+    `Project inquiry — ${project.title}`
+  )}`;
+
+  return (
+    <div className="project-card__links">
+      <a
+        className="text-link"
+        href={project.url ?? inquiryHref}
+        target={project.url ? "_blank" : undefined}
+        rel={project.url ? "noreferrer" : undefined}
+      >
+        {project.url ? "Visit ForgeLane" : "Ask about this work"}
+        <ArrowUpRight size={17} aria-hidden="true" />
+      </a>
+    </div>
+  );
+};
+
+const tiltProject = (event: ReactPointerEvent<HTMLElement>) => {
+  if (event.pointerType !== "mouse") return;
+  const bounds = event.currentTarget.getBoundingClientRect();
+  const x = (event.clientX - bounds.left) / bounds.width - 0.5;
+  const y = (event.clientY - bounds.top) / bounds.height - 0.5;
+  event.currentTarget.style.setProperty("--project-rx", `${y * -4}deg`);
+  event.currentTarget.style.setProperty("--project-ry", `${x * 5}deg`);
+};
+
+const resetProjectTilt = (event: ReactPointerEvent<HTMLElement>) => {
+  event.currentTarget.style.setProperty("--project-rx", "0deg");
+  event.currentTarget.style.setProperty("--project-ry", "0deg");
+};
 
 const WorkSection = () => (
-  <section id="work" className="bg-[#0D120E]">
-    <div className="max-w-7xl mx-auto px-6 py-24 md:py-36">
-      <SectionHeading index="03" label="Selected work" />
-      <div className="grid md:grid-cols-2 gap-6 md:gap-8">
-        {PROJECTS.map((project, index) => (
-          <Reveal
-            key={project.title}
-            delay={(index % 2) * 0.12}
-            className={index % 2 === 1 ? "md:mt-20" : ""}
-          >
-            <article className="group">
-              <div
-                className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${
-                  COVER_GRADIENTS[index % COVER_GRADIENTS.length]
-                } aspect-[4/3]`}
-              >
-                {/* Typographic cover shows if the screenshot is missing */}
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-0 flex items-center justify-center font-accent text-[7rem] md:text-[9rem] text-[#F1EEE3]/15 select-none"
-                >
-                  {project.title.charAt(0)}
-                  <span className="text-[3rem] md:text-[4rem] text-[#E4C580]/45 ml-3 not-italic">
-                    &#10033;
-                  </span>
-                </span>
-                <span
-                  aria-hidden="true"
-                  className="absolute bottom-4 right-6 text-outline-soft text-6xl md:text-7xl font-medium leading-none select-none"
-                >
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <img
-                  src={project.image}
-                  alt={`${project.title} — project preview`}
-                  loading="lazy"
-                  onError={(event) => {
-                    event.currentTarget.style.display = "none";
-                  }}
-                  className="relative w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-                />
-              </div>
-              <div className="pt-6 flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="text-2xl md:text-3xl font-medium tracking-tight text-[#F1EEE3]">
-                    {project.title}
-                  </h3>
-                  <p className="mt-2 text-base md:text-lg text-[#B9C2B4] leading-relaxed max-w-md">
-                    {project.category}
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {project.tools.map((tool) => (
-                      <span
-                        key={tool}
-                        className="px-3 py-1 rounded-full border border-[#F1EEE3]/15 text-xs text-[#8C978A] font-medium"
-                      >
-                        {tool}
-                      </span>
-                    ))}
-                  </div>
+  <section id="work" className="section section--work">
+    <div className="portfolio-container">
+      <SectionHeading
+        index="01"
+        eyebrow="The venture"
+        title="One studio. Full ownership."
+        description="ForgeLane is where I bring strategy, identity, interface and engineering together under one roof."
+      />
+
+      <div className="work-grid">
+        {PROJECTS.map((project) => (
+          <Reveal key={project.title} className="project-card-shell">
+            <article
+              className="project-card"
+              onPointerMove={tiltProject}
+              onPointerLeave={resetProjectTilt}
+            >
+              <ProjectVisual />
+              <div className="project-card__content">
+                <div className="project-card__heading">
+                  <span>{project.number}</span>
+                  <p>{project.eyebrow}</p>
                 </div>
-                <a
-                  href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
-                    `About your project: ${project.title}`
-                  )}`}
-                  aria-label={`Ask about ${project.title}`}
-                  className="mt-2 flex-none w-11 h-11 rounded-full border border-[#F1EEE3]/20 flex items-center justify-center text-[#F1EEE3] transition-all duration-300 group-hover:bg-[#A8C69F] group-hover:text-[#0D120E] group-hover:rotate-45 hover:bg-[#A8C69F] hover:text-[#0D120E]"
-                >
-                  <ArrowUpRight size={18} aria-hidden="true" />
-                </a>
+                <h3>{project.title}</h3>
+                <p className="project-card__summary">{project.summary}</p>
+                <p className="project-card__contribution">{project.contribution}</p>
+                <ul className="tag-list" aria-label={`${project.title} disciplines`}>
+                  {project.tags.map((tag) => (
+                    <li key={tag}>{tag}</li>
+                  ))}
+                </ul>
+                <ProjectLinks project={project} />
               </div>
             </article>
           </Reveal>
         ))}
       </div>
-      <Reveal className="mt-20 md:mt-28 text-center">
-        <a
-          href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
-            "Project inquiry"
-          )}`}
-          className="inline-flex items-center gap-2 text-lg md:text-xl text-[#F1EEE3] underline underline-offset-4 decoration-[#A8C69F] hover:opacity-60 transition-opacity"
-        >
-          Have a project in mind? Let&apos;s build it together
-          <ArrowUpRight size={20} aria-hidden="true" />
-        </a>
-      </Reveal>
     </div>
   </section>
 );
