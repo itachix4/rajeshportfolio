@@ -1,9 +1,18 @@
-import { ArrowUpRight } from "lucide-react";
+import { lazy, Suspense } from "react";
+import { ArrowUpRight, MousePointer2 } from "lucide-react";
+import { useReducedMotion } from "motion/react";
+import { useBuildMode } from "../buildMode";
 import { PROFILE, PRINCIPLES } from "./data";
 import { Reveal, SectionHeading } from "./Reveal";
 
-const AboutSection = () => (
-  <section id="about" className="section section--about">
+const DigitalTwinScene = lazy(() => import("./DigitalTwinScene"));
+
+const AboutSection = () => {
+  const { mode } = useBuildMode();
+  const reducedMotion = Boolean(useReducedMotion());
+
+  return (
+    <section id="about" className="section section--about">
     <div className="portfolio-container">
       <SectionHeading
         index="02"
@@ -14,18 +23,32 @@ const AboutSection = () => (
 
       <div className="about-layout">
         <Reveal className="about-portrait">
-          <img
-            src="/images/parth-digital-twin.jpg"
-            srcSet="/images/parth-digital-twin-960.jpg 720w, /images/parth-digital-twin.jpg 1086w"
-            sizes="(max-width: 900px) calc(100vw - 32px), 42vw"
-            alt="AI-rendered digital twin of Parth Parwani in a black technical jacket"
-            width="1086"
-            height="1448"
-            loading="lazy"
-          />
+          <div
+            className="digital-twin-frame"
+            role="img"
+            aria-label="Interactive AI-rendered digital twin of Parth Parwani"
+          >
+            <Suspense
+              fallback={(
+                <img
+                  src="/images/parth-digital-twin-960.jpg"
+                  alt=""
+                  width="960"
+                  height="1280"
+                  loading="lazy"
+                />
+              )}
+            >
+              <DigitalTwinScene mode={mode} reducedMotion={reducedMotion} />
+            </Suspense>
+          </div>
           <div className="about-portrait__chrome" aria-hidden="true">
             <span>PARTH / 2026</span>
-            <span>DIGITAL TWIN 01</span>
+            <span>DIGITAL TWIN 02</span>
+          </div>
+          <div className="digital-twin-hint" aria-hidden="true">
+            <MousePointer2 size={12} />
+            <span>Move to shift perspective</span>
           </div>
           <div className="about-portrait__caption">
             <span>17</span>
@@ -81,7 +104,8 @@ const AboutSection = () => (
         ))}
       </div>
     </div>
-  </section>
-);
+    </section>
+  );
+};
 
 export default AboutSection;
