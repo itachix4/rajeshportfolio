@@ -32,9 +32,10 @@ export type Project = {
   number: string;
   title: string;
   eyebrow: string;
-  summary: string;
-  contribution: string;
-  tags: string[];
+  problem: string;
+  outcome: string;
+  role: string;
+  stack: string[];
   url?: string;
 };
 
@@ -43,11 +44,12 @@ export const PROJECTS: Project[] = [
     number: "01",
     title: "ForgeLane",
     eyebrow: "Founder · Premium digital studio",
-    summary:
-      "A premium web design and development studio built for ambitious brands that refuse to look ordinary.",
-    contribution:
-      "Founder, brand direction, product strategy, design systems and full-stack delivery.",
-    tags: ["Founder", "Brand identity", "Web design", "Development"],
+    problem:
+      "Digital studios often blur into the same visual and verbal language, making it harder for ambitious brands to choose with confidence.",
+    outcome:
+      "Built a distinctive studio brand and production-ready web presence that brings strategy, identity, interface and delivery into one system.",
+    role: "Founder · Strategy · Brand direction · UI/UX · Full-stack delivery",
+    stack: ["React", "TypeScript", "Motion", "Vercel"],
     url: "https://forgelane.vercel.app",
   },
 ];

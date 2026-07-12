@@ -122,7 +122,7 @@ const HeroNavbar = () => {
         </div>
 
         <a className="header-cta" href={`mailto:${CONTACT_EMAIL}`}>
-          Work with me
+          Start a project
           <ArrowUpRight size={16} aria-hidden="true" />
         </a>
 

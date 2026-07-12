@@ -4,6 +4,7 @@ import { useReducedMotion } from "motion/react";
 import { useBuildMode } from "../buildMode";
 import { PROFILE, PRINCIPLES } from "./data";
 import { Reveal, SectionHeading } from "./Reveal";
+import ClientOnly from "../ClientOnly";
 
 const DigitalTwinScene = lazy(() => import("./DigitalTwinScene"));
 
@@ -17,8 +18,8 @@ const AboutSection = () => {
       <SectionHeading
         index="02"
         eyebrow="About me"
-        title="One mind. Three disciplines."
-        description="Design instinct, engineering discipline and a founder’s perspective—working as one system."
+        title="Strategy, interface and engineering—one system."
+        description="One person stays accountable from the first decision to the production build."
       />
 
       <div className="about-layout">
@@ -38,9 +39,11 @@ const AboutSection = () => {
               height="1800"
               loading="lazy"
             />
-            <Suspense fallback={null}>
-              <DigitalTwinScene mode={mode} reducedMotion={reducedMotion} />
-            </Suspense>
+            <ClientOnly>
+              <Suspense fallback={null}>
+                <DigitalTwinScene mode={mode} reducedMotion={reducedMotion} />
+              </Suspense>
+            </ClientOnly>
           </div>
           <div className="about-portrait__chrome" aria-hidden="true">
             <span>PARTH / 2026</span>
@@ -59,12 +62,12 @@ const AboutSection = () => {
         <div className="about-story">
           <Reveal className="about-manifesto">
             <p>
-              I&apos;m <strong>Parth Parwani</strong>. I turn ambitious ideas into
-              digital experiences that feel clear, distinctive and built to last.
+              I&apos;m <strong>Parth Parwani</strong>. At 17, I&apos;m studying PCM while
+              founding and building ForgeLane.
             </p>
             <p>
-              I move between identity, interface and engineering because the most
-              valuable work happens where those disciplines meet.
+              I work across strategy, interface and engineering so fewer decisions
+              get diluted between an idea and the product people finally use.
             </p>
             <a className="text-link" href="https://forgelane.vercel.app" target="_blank" rel="noreferrer">
               Discover ForgeLane
@@ -81,12 +84,12 @@ const AboutSection = () => {
             <Reveal delay={0.05} className="fact-card">
               <span>Right now</span>
               <strong>{PROFILE.education}</strong>
-              <p>Learning in class. Building everywhere else.</p>
+              <p>Studying PCM while building a production-focused studio.</p>
             </Reveal>
             <Reveal delay={0.1} className="fact-card">
               <span>Working across</span>
               <strong>Design × Code</strong>
-              <p>From the first idea to production.</p>
+              <p>One accountable system from positioning to production.</p>
             </Reveal>
           </div>
         </div>

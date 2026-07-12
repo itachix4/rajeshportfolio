@@ -2,6 +2,7 @@ import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import type { BuildMode } from "../buildMode";
+import CanvasFrameBudget from "../CanvasFrameBudget";
 
 type DigitalTwinSceneProps = {
   mode: BuildMode;
@@ -9,9 +10,9 @@ type DigitalTwinSceneProps = {
 };
 
 const MODE_COLORS: Record<BuildMode, string> = {
-  designer: "#ff6a2b",
-  engineer: "#64d2ff",
-  founder: "#ffb13b",
+  designer: "#ff6b35",
+  engineer: "#ff6b35",
+  founder: "#ff6b35",
 };
 
 const TwinWorld = ({ mode, reducedMotion }: DigitalTwinSceneProps) => {
@@ -115,6 +116,7 @@ const DigitalTwinScene = ({ mode, reducedMotion }: DigitalTwinSceneProps) => (
     gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
     onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
   >
+    <CanvasFrameBudget reducedMotion={reducedMotion} />
     <TwinWorld mode={mode} reducedMotion={reducedMotion} />
   </Canvas>
 );

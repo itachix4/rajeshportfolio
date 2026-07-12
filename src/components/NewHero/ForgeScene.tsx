@@ -2,6 +2,7 @@ import { Canvas, ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import type { BuildMode } from "../buildMode";
+import CanvasFrameBudget from "../CanvasFrameBudget";
 
 export type ForgeMode = BuildMode;
 
@@ -12,9 +13,9 @@ type ForgeSceneProps = {
 };
 
 const MODE_COLORS: Record<ForgeMode, string> = {
-  engineer: "#64d2ff",
-  designer: "#ff6a2b",
-  founder: "#ff9f0a",
+  engineer: "#ff6b35",
+  designer: "#ff6b35",
+  founder: "#ff6b35",
 };
 
 const stopAndCycle = (event: ThreeEvent<MouseEvent>, onCycle: () => void) => {
@@ -26,7 +27,7 @@ const EngineerCore = () => (
   <group>
     <mesh castShadow>
       <torusKnotGeometry args={[1.08, 0.3, 180, 28, 2, 3]} />
-      <meshStandardMaterial color="#64d2ff" metalness={0.82} roughness={0.22} />
+      <meshStandardMaterial color="#ff6b35" metalness={0.82} roughness={0.22} />
     </mesh>
     <mesh scale={1.055}>
       <torusKnotGeometry args={[1.08, 0.3, 120, 18, 2, 3]} />
@@ -253,6 +254,7 @@ const ForgeScene = (props: ForgeSceneProps) => (
       gl.toneMappingExposure = 1.08;
     }}
   >
+    <CanvasFrameBudget reducedMotion={props.reducedMotion} />
     <ForgeWorld {...props} />
   </Canvas>
 );

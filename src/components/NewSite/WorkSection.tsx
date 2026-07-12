@@ -54,7 +54,7 @@ const ProjectLinks = ({ project }: { project: Project }) => {
         target={project.url ? "_blank" : undefined}
         rel={project.url ? "noreferrer" : undefined}
       >
-        {project.url ? "Visit ForgeLane" : "Ask about this work"}
+        {project.url ? "View live venture" : "Ask about this work"}
         <ArrowUpRight size={17} aria-hidden="true" />
       </a>
     </div>
@@ -81,8 +81,8 @@ const WorkSection = () => (
       <SectionHeading
         index="01"
         eyebrow="Featured venture"
-        title="ForgeLane. Built from zero."
-        description="The studio where strategy, identity, interface and engineering meet one uncompromising standard."
+        title="ForgeLane: from positioning to production."
+        description="I founded the studio, shaped its identity and built the digital system that brings the promise to life."
       />
 
       <div className="work-grid">
@@ -100,10 +100,19 @@ const WorkSection = () => (
                   <p>{project.eyebrow}</p>
                 </div>
                 <h3>{project.title}</h3>
-                <p className="project-card__summary">{project.summary}</p>
-                <p className="project-card__contribution">{project.contribution}</p>
-                <ul className="tag-list" aria-label={`${project.title} disciplines`}>
-                  {project.tags.map((tag) => (
+                <div className="project-card__proof">
+                  <div>
+                    <span>Problem</span>
+                    <p>{project.problem}</p>
+                  </div>
+                  <div>
+                    <span>Outcome</span>
+                    <p>{project.outcome}</p>
+                  </div>
+                </div>
+                <p className="project-card__contribution">{project.role}</p>
+                <ul className="tag-list" aria-label={`${project.title} technology stack`}>
+                  {project.stack.map((tag) => (
                     <li key={tag}>{tag}</li>
                   ))}
                 </ul>

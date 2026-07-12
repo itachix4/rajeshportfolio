@@ -1,6 +1,5 @@
 import { MotionConfig } from "motion/react";
 import { BuildModeProvider } from "./components/BuildModeProvider";
-import IntroSequence from "./components/IntroSequence";
 import HeroNavbar from "./components/NewHero/HeroNavbar";
 import HeroSection from "./components/NewHero/HeroSection";
 import MarqueeBand from "./components/NewSite/MarqueeBand";
@@ -10,6 +9,7 @@ import ServicesSection from "./components/NewSite/ServicesSection";
 import CareerSection from "./components/NewSite/CareerSection";
 import TechMarquee from "./components/NewSite/TechMarquee";
 import ContactFooter from "./components/NewSite/ContactFooter";
+import MobileProjectCTA from "./components/NewSite/MobileProjectCTA";
 
 const App = () => (
   <BuildModeProvider>
@@ -17,7 +17,6 @@ const App = () => (
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
-      <IntroSequence />
       <HeroNavbar />
       <main id="main-content">
         <HeroSection />
@@ -29,6 +28,7 @@ const App = () => (
         <TechMarquee />
       </main>
       <ContactFooter />
+      <MobileProjectCTA />
     </MotionConfig>
   </BuildModeProvider>
 );

@@ -12,16 +12,16 @@ const ContactFooter = () => (
       <Reveal className="contact-heading">
         <span>06 / Start something</span>
         <h2>
-          Let&apos;s build the thing
-          <em> they remember.</em>
+          Have a product or brand
+          <em> that needs to ship?</em>
         </h2>
       </Reveal>
 
       <div className="contact-layout">
         <Reveal className="contact-primary">
           <p>
-            I work best with founders and teams who care about the details and
-            want their digital presence to feel unmistakably theirs.
+            Send the brief, the constraint and the ambition. I&apos;ll reply with a
+            clear next step—not a generic sales sequence.
           </p>
           <a className="contact-email" href={`mailto:${CONTACT_EMAIL}`}>
             {CONTACT_EMAIL}

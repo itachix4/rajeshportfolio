@@ -2,6 +2,7 @@ import { Canvas, ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import type { BuildMode } from "../buildMode";
+import CanvasFrameBudget from "../CanvasFrameBudget";
 
 type SkillConstellationSceneProps = {
   mode: BuildMode;
@@ -11,9 +12,9 @@ type SkillConstellationSceneProps = {
 };
 
 const MODE_COLORS: Record<BuildMode, string> = {
-  designer: "#ff6a2b",
-  engineer: "#64d2ff",
-  founder: "#ff9f0a",
+  designer: "#ff6b35",
+  engineer: "#ff6b35",
+  founder: "#ff6b35",
 };
 
 const NODE_POSITIONS: Array<[number, number, number]> = [
@@ -183,6 +184,7 @@ const SkillConstellationScene = (props: SkillConstellationSceneProps) => (
       gl.toneMappingExposure = 1.08;
     }}
   >
+    <CanvasFrameBudget reducedMotion={props.reducedMotion} />
     <ambientLight intensity={0.48} />
     <pointLight position={[0, 1, 4]} color={MODE_COLORS[props.mode]} intensity={16} />
     <pointLight position={[-3, -2, 2]} color="#ffffff" intensity={5} />

@@ -4,6 +4,7 @@ import { ArrowDownRight, CircleDot } from "lucide-react";
 import { BuildMode, useBuildMode } from "../buildMode";
 import { WORKBENCH_MODES } from "./data";
 import { Reveal } from "./Reveal";
+import ClientOnly from "../ClientOnly";
 
 const SkillConstellationScene = lazy(() => import("./SkillConstellationScene"));
 
@@ -89,20 +90,22 @@ const SkillWorkbench = () => {
 
           <div className="constellation-stage">
             <div className="constellation-visual">
-              <Suspense
+              <ClientOnly
                 fallback={
                   <div className="constellation-fallback" aria-hidden="true">
                     <span />
                   </div>
                 }
               >
-                <SkillConstellationScene
-                  mode={modeId}
-                  activeSkillIndex={skillIndex}
-                  reducedMotion={Boolean(reduceMotion)}
-                  onSelectSkill={setSkillIndex}
-                />
-              </Suspense>
+                <Suspense fallback={null}>
+                  <SkillConstellationScene
+                    mode={modeId}
+                    activeSkillIndex={skillIndex}
+                    reducedMotion={Boolean(reduceMotion)}
+                    onSelectSkill={setSkillIndex}
+                  />
+                </Suspense>
+              </ClientOnly>
               <div className="constellation-core-label" aria-hidden="true">
                 <span>OUTCOME</span>
                 <strong>{activeMode.label}</strong>

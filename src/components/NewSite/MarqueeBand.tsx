@@ -1,17 +1,18 @@
-import { SIGNALS } from "./data";
+import { ArrowUpRight } from "lucide-react";
 
 const MarqueeBand = () => (
-  <aside className="signal-band" aria-label="Areas of expertise">
-    <div className="portfolio-container">
-      <p className="signal-band__label">What I bring</p>
-      <ul className="signal-band__list">
-        {SIGNALS.map((signal, index) => (
-          <li key={signal}>
-            <span>{String(index + 1).padStart(2, "0")}</span>
-            {signal}
-          </li>
-        ))}
-      </ul>
+  <aside className="proof-strip" aria-label="Professional proof points">
+    <div className="portfolio-container proof-strip__inner">
+      <p className="proof-strip__label">Built, not just imagined</p>
+      <dl className="proof-strip__facts">
+        <div><dt>Founder</dt><dd>ForgeLane</dd></div>
+        <div><dt>Delivery</dt><dd>Strategy → production</dd></div>
+        <div><dt>Core stack</dt><dd>React · TypeScript · Vercel</dd></div>
+      </dl>
+      <a href="https://forgelane.vercel.app" target="_blank" rel="noreferrer">
+        View the live venture
+        <ArrowUpRight size={15} aria-hidden="true" />
+      </a>
     </div>
   </aside>
 );
