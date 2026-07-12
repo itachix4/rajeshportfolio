@@ -29,27 +29,56 @@ export const SIGNALS = [
 ];
 
 export type Project = {
+  id: string;
   number: string;
   title: string;
   eyebrow: string;
+  shortDescription: string;
+  description: string;
   problem: string;
   outcome: string;
+  challenge: string;
+  learnings: string[];
   role: string;
   stack: string[];
+  timeline: Array<{ phase: string; detail: string }>;
+  accent: string;
+  atmosphere: string;
   url?: string;
+  codeUrl?: string;
 };
 
 export const PROJECTS: Project[] = [
   {
+    id: "forgelane",
     number: "01",
     title: "ForgeLane",
     eyebrow: "Founder · Premium digital studio",
+    shortDescription: "A premium digital studio built as one connected brand, product and delivery system.",
+    description:
+      "ForgeLane is the studio I founded to create distinctive websites and digital products for ambitious ideas. I shaped the positioning, identity, interface system and production build as one authored experience.",
     problem:
       "Digital studios often blur into the same visual and verbal language, making it harder for ambitious brands to choose with confidence.",
     outcome:
       "Built a distinctive studio brand and production-ready web presence that brings strategy, identity, interface and delivery into one system.",
+    challenge:
+      "Make the studio feel premium and future-facing without falling into the same visual language used by every modern agency.",
+    learnings: [
+      "A sharper positioning idea makes every visual decision easier.",
+      "Motion feels premium when it clarifies hierarchy instead of competing with it.",
+      "Founder, designer and engineer decisions work best when they share one product goal.",
+    ],
     role: "Founder · Strategy · Brand direction · UI/UX · Full-stack delivery",
     stack: ["React", "TypeScript", "Motion", "Vercel"],
+    timeline: [
+      { phase: "Discover", detail: "Defined the audience, category and reason to choose ForgeLane." },
+      { phase: "Position", detail: "Created the strategic and verbal direction around distinct digital craft." },
+      { phase: "Design", detail: "Built the identity, type system, interface language and motion rules." },
+      { phase: "Engineer", detail: "Developed a responsive production experience with reusable components." },
+      { phase: "Evolve", detail: "Continuing to refine the studio as the work and point of view grow." },
+    ],
+    accent: "#ff6a00",
+    atmosphere: "#ffb36b",
     url: "https://forgelane.vercel.app",
   },
 ];

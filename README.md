@@ -1,16 +1,39 @@
-# My Portfolio Wesbite - Overview 🚀
+# Parth Parwani — Interactive Portfolio
 
-This repository contains the open source version of my porfolio website.
-Do check it out!
+The production source for [parthparwani.com](https://parthparwani.com): an immersive portfolio combining product design, frontend engineering and real-time graphics.
 
-## Instructions 🛠️
+## Experience systems
 
-I have modified the gsap club plugins with the trial plugins, but with the trial plugin you cannot host it🔴. So for Club plugins, Check out here: https://gsap.com/docs/v3/Installation/
+- Cinematic WebGL hero with a custom GLSL material and pointer/scroll camera rig
+- Interactive project galaxy with camera flight and an accessible DOM control layer
+- Portfolio-scoped local assistant with streamed answers, memory search and session history
+- PARTH LAB OS, a dedicated experimental interface at `/lab`
+- Adaptive WebGL, reduced-motion fallbacks and viewport-based scene mounting
 
-**Techstack** - React, TypeScript, GSAP, ThreeJS, WebGL, HTML, Css, JavaScript
+## Stack
 
-![Portfolio-Preview](public/images/preview.png)
+- Next.js 16 App Router
+- React 19 and TypeScript
+- Tailwind CSS 4 and custom CSS design tokens
+- Motion for React
+- Three.js and React Three Fiber
+- Vercel Analytics and deployment
+
+## Development
+
+```bash
+npm install
+npm run dev
+```
+
+Validation commands:
+
+```bash
+npm run lint
+npm run typecheck
+npm run build
+```
 
 ## License
 
-This project is open source and available under the [MIT License](LICENSE).
+This project is available under the [MIT License](LICENSE).

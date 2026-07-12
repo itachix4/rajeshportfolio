@@ -1,6 +1,7 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useRef } from "react";
+import Image from "next/image";
 import { ArrowUpRight, MousePointer2 } from "lucide-react";
-import { useReducedMotion } from "motion/react";
+import { useInView, useReducedMotion } from "motion/react";
 import { useBuildMode } from "../buildMode";
 import { PROFILE, PRINCIPLES } from "./data";
 import { Reveal, SectionHeading } from "./Reveal";
@@ -11,12 +12,14 @@ import RenderBoundary from "../RenderBoundary";
 const DigitalTwinScene = lazy(() => import("./DigitalTwinScene"));
 
 const AboutSection = () => {
+  const sectionRef = useRef<HTMLElement>(null);
   const { mode } = useBuildMode();
   const reducedMotion = Boolean(useReducedMotion());
   const allowWebGL = useAdaptiveWebGL();
+  const sectionVisible = useInView(sectionRef, { margin: "280px 0px" });
 
   return (
-    <section id="about" className="section section--about">
+    <section ref={sectionRef} id="about" className="section section--about">
     <div className="portfolio-container">
       <SectionHeading
         index="02"
@@ -32,17 +35,15 @@ const AboutSection = () => {
             role="img"
             aria-label="Interactive AI-rendered digital twin of Parth Parwani"
           >
-            <img
+            <Image
               className="digital-twin-frame__fallback"
               src="/images/parth-digital-twin.jpg"
-              srcSet="/images/parth-digital-twin-960.jpg 720w, /images/parth-digital-twin.jpg 1350w"
               sizes="(max-width: 900px) calc(100vw - 32px), 42vw"
               alt=""
-              width="1350"
-              height="1800"
-              loading="lazy"
+              width={1350}
+              height={1800}
             />
-            {allowWebGL && !reducedMotion && (
+            {allowWebGL && !reducedMotion && sectionVisible && (
               <ClientOnly>
                 <RenderBoundary fallback={null}>
                   <Suspense fallback={null}>

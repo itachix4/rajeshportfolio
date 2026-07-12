@@ -1,5 +1,5 @@
-import { lazy, Suspense, useEffect, useId, useMemo, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { lazy, Suspense, useEffect, useId, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion, useInView, useReducedMotion } from "motion/react";
 import { ArrowDownRight, CircleDot } from "lucide-react";
 import { BuildMode, useBuildMode } from "../buildMode";
 import { WORKBENCH_MODES } from "./data";
@@ -13,10 +13,12 @@ const SkillConstellationScene = lazy(() => import("./SkillConstellationScene"));
 const MODE_ORDER: BuildMode[] = ["designer", "engineer", "founder"];
 
 const SkillWorkbench = () => {
+  const sectionRef = useRef<HTMLElement>(null);
   const { mode: modeId, setMode: setModeId } = useBuildMode();
   const [skillIndex, setSkillIndex] = useState(0);
   const reduceMotion = useReducedMotion();
   const allowWebGL = useAdaptiveWebGL();
+  const sectionVisible = useInView(sectionRef, { margin: "280px 0px" });
   const detailId = useId();
   const orderedModes = MODE_ORDER.map(
     (id) => WORKBENCH_MODES.find((mode) => mode.id === id) ?? WORKBENCH_MODES[0]
@@ -47,7 +49,7 @@ const SkillWorkbench = () => {
   };
 
   return (
-    <section className="section section--workbench" aria-labelledby="workbench-title">
+    <section ref={sectionRef} className="section section--workbench" aria-labelledby="workbench-title">
       <div className="portfolio-container">
         <Reveal className="workbench-intro">
           <span>05 / Interactive skill map</span>
@@ -100,7 +102,7 @@ const SkillWorkbench = () => {
                   </div>
                 }
               >
-                {allowWebGL && !reduceMotion ? (
+                {allowWebGL && !reduceMotion && sectionVisible ? (
                   <RenderBoundary
                     fallback={
                       <div className="constellation-fallback" aria-hidden="true">

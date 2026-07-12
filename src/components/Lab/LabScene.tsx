@@ -380,7 +380,7 @@ const ReactionDiffusionPiece = () => {
   const resolution = 256;
   const brush = useRef(new THREE.Vector2(0.5, 0.5));
   const brushDown = useRef(0);
-  const currentTexture = useRef<THREE.Texture>();
+  const currentTexture = useRef<THREE.Texture | null>(null);
   const writeTargetIndex = useRef(0);
 
   const resources = useMemo(() => {

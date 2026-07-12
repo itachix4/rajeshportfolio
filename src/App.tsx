@@ -1,9 +1,9 @@
+"use client";
+
 import { MotionConfig } from "motion/react";
 import { BuildModeProvider } from "./components/BuildModeProvider";
 import HeroNavbar from "./components/NewHero/HeroNavbar";
-import HeroSection from "./components/NewHero/HeroSection";
 import MarqueeBand from "./components/NewSite/MarqueeBand";
-import WorkSection from "./components/NewSite/WorkSection";
 import AboutSection from "./components/NewSite/AboutSection";
 import ServicesSection from "./components/NewSite/ServicesSection";
 import CareerSection from "./components/NewSite/CareerSection";
@@ -11,6 +11,9 @@ import TechMarquee from "./components/NewSite/TechMarquee";
 import ContactFooter from "./components/NewSite/ContactFooter";
 import MobileProjectCTA from "./components/NewSite/MobileProjectCTA";
 import LabPage from "./components/Lab/LabPage";
+import CinematicHero from "./components/Experience/CinematicHero";
+import ProjectGalaxy from "./components/Experience/ProjectGalaxy";
+import PortfolioAssistant from "./components/Experience/PortfolioAssistant";
 
 const PortfolioPage = () => (
   <BuildModeProvider>
@@ -19,9 +22,9 @@ const PortfolioPage = () => (
     </a>
     <HeroNavbar />
     <main id="main-content">
-      <HeroSection />
+      <CinematicHero />
+      <ProjectGalaxy />
       <MarqueeBand />
-      <WorkSection />
       <AboutSection />
       <ServicesSection />
       <CareerSection />
@@ -29,6 +32,7 @@ const PortfolioPage = () => (
     </main>
     <ContactFooter />
     <MobileProjectCTA />
+    <PortfolioAssistant />
   </BuildModeProvider>
 );
 
