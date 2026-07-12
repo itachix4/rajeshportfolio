@@ -19,11 +19,11 @@ await writeFile(outputPath, injectApp(template, portfolioHtml), "utf8");
 const labTemplate = template
   .replaceAll(
     "Parth Parwani — Full-Stack Developer, Designer & Founder",
-    "Compute Lab — Parth Parwani",
+    "PARTH LAB OS — Interactive Experiments by Parth Parwani",
   )
   .replace(
     "Parth Parwani is a 17-year-old full-stack developer, designer, entrepreneur, and founder of ForgeLane.",
-    "Live WebGL experiments by Parth Parwani: raymarching, 100,000 GPU particles and reaction-diffusion simulation.",
+    "Open PARTH LAB OS, an interactive mobile operating system for Parth Parwani's experiments, prototypes and live WebGL research.",
   )
   .replace('href="https://parthparwani.com/"', 'href="https://parthparwani.com/lab"')
   .replace(
@@ -32,7 +32,7 @@ const labTemplate = template
   )
   .replace(
     "Premium websites, brand identities and modern digital products—designed and built by Parth Parwani.",
-    "Three live GPU experiments in raymarching, particle flow and reaction-diffusion by Parth Parwani.",
+    "An interactive experimental operating system containing motion, AI, WebGL, UI and live-build research by Parth Parwani.",
   );
 const labHtml = render("/lab");
 const labDirectory = resolve("dist/lab");
