@@ -7,9 +7,10 @@ import "./site.css";
 inject();
 
 const root = document.getElementById("root")!;
+const pathname = window.location.pathname;
 const app = (
   <StrictMode>
-    <App />
+    <App pathname={pathname} />
   </StrictMode>
 );
 

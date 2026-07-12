@@ -5,12 +5,15 @@ import { useBuildMode } from "../buildMode";
 import { PROFILE, PRINCIPLES } from "./data";
 import { Reveal, SectionHeading } from "./Reveal";
 import ClientOnly from "../ClientOnly";
+import useAdaptiveWebGL from "../useAdaptiveWebGL";
+import RenderBoundary from "../RenderBoundary";
 
 const DigitalTwinScene = lazy(() => import("./DigitalTwinScene"));
 
 const AboutSection = () => {
   const { mode } = useBuildMode();
   const reducedMotion = Boolean(useReducedMotion());
+  const allowWebGL = useAdaptiveWebGL();
 
   return (
     <section id="about" className="section section--about">
@@ -39,11 +42,15 @@ const AboutSection = () => {
               height="1800"
               loading="lazy"
             />
-            <ClientOnly>
-              <Suspense fallback={null}>
-                <DigitalTwinScene mode={mode} reducedMotion={reducedMotion} />
-              </Suspense>
-            </ClientOnly>
+            {allowWebGL && !reducedMotion && (
+              <ClientOnly>
+                <RenderBoundary fallback={null}>
+                  <Suspense fallback={null}>
+                    <DigitalTwinScene mode={mode} reducedMotion={false} />
+                  </Suspense>
+                </RenderBoundary>
+              </ClientOnly>
+            )}
           </div>
           <div className="about-portrait__chrome" aria-hidden="true">
             <span>PARTH / 2026</span>

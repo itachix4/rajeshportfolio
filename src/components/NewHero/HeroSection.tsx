@@ -1,10 +1,13 @@
-import { lazy, Suspense } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { lazy, Suspense, useRef } from "react";
+import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { ArrowDownRight, ArrowUpRight, MousePointer2 } from "lucide-react";
 import { useBuildMode } from "../buildMode";
 import { PROFILE } from "../NewSite/data";
 import type { ForgeMode } from "./ForgeScene";
 import ClientOnly from "../ClientOnly";
+import useAdaptiveWebGL from "../useAdaptiveWebGL";
+import MagneticLink from "../MagneticLink";
+import RenderBoundary from "../RenderBoundary";
 
 const ForgeScene = lazy(() => import("./ForgeScene"));
 
@@ -43,14 +46,27 @@ const FORGE_MODES: Array<{
 
 const HeroSection = () => {
   const reduceMotion = useReducedMotion();
+  const allowWebGL = useAdaptiveWebGL();
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  const copyY = useTransform(scrollYProgress, [0, 1], [0, -54]);
+  const copyOpacity = useTransform(scrollYProgress, [0, 0.7, 1], [1, 1, 0.35]);
+  const forgeY = useTransform(scrollYProgress, [0, 1], [0, -28]);
+  const forgeScale = useTransform(scrollYProgress, [0, 1], [1, 0.96]);
   const { mode, setMode, cycleMode } = useBuildMode();
   const activeMode = FORGE_MODES.find((item) => item.id === mode) ?? FORGE_MODES[0];
 
   return (
-    <section id="top" className="hero-section" aria-labelledby="hero-title">
+    <section ref={heroRef} id="top" className="hero-section" aria-labelledby="hero-title">
       <div className="hero-ambient" aria-hidden="true" />
       <div className="hero-grid portfolio-container">
-        <div className="hero-copy">
+        <motion.div
+          className="hero-copy"
+          style={reduceMotion ? undefined : { y: copyY, opacity: copyOpacity }}
+        >
           <motion.div
             className="hero-kicker"
             initial={false}
@@ -82,14 +98,14 @@ const HeroSection = () => {
               a fast, production-ready launch.
             </p>
             <div className="hero-actions">
-              <a className="button button--primary" href="#work">
+              <MagneticLink className="button button--primary" href="#work">
                 View selected work
                 <ArrowDownRight size={18} aria-hidden="true" />
-              </a>
-              <a className="button button--ghost" href={`mailto:${PROFILE.email}`}>
+              </MagneticLink>
+              <MagneticLink className="button button--ghost" href={`mailto:${PROFILE.email}`} strength={0.1}>
                 Start a project
                 <ArrowUpRight size={18} aria-hidden="true" />
-              </a>
+              </MagneticLink>
             </div>
           </motion.div>
 
@@ -112,18 +128,19 @@ const HeroSection = () => {
               <dd>17 · already shipping</dd>
             </div>
           </motion.dl>
-        </div>
+        </motion.div>
 
         <motion.aside
           className="hero-forge"
           aria-label={`Interactive 3D creative forge. Current mode: ${activeMode.label}.`}
           initial={false}
-          animate={reduceMotion ? undefined : { opacity: 1, scale: 1 }}
+          animate={reduceMotion ? undefined : { opacity: 1 }}
+          style={reduceMotion ? undefined : { y: forgeY, scale: forgeScale }}
           transition={{ duration: 0.65, delay: 0.12 }}
         >
           <div className="hero-forge__topline">
             <span>PARTH / DIGITAL FORGE</span>
-            <span>REAL-TIME WEBGL</span>
+            <span>{allowWebGL && !reduceMotion ? "CUSTOM GLSL / WEBGL" : "STATIC / ACCESSIBLE"}</span>
           </div>
 
           <div className="hero-forge__viewport">
@@ -134,18 +151,35 @@ const HeroSection = () => {
                 </div>
               }
             >
-              <Suspense fallback={null}>
-                <ForgeScene
-                  mode={mode}
-                  reducedMotion={Boolean(reduceMotion)}
-                  onCycle={cycleMode}
-                />
-              </Suspense>
+              {allowWebGL && !reduceMotion ? (
+                <RenderBoundary
+                  fallback={
+                    <div className="forge-canvas-fallback" aria-hidden="true">
+                      <span />
+                    </div>
+                  }
+                >
+                  <Suspense fallback={null}>
+                    <ForgeScene
+                      mode={mode}
+                      reducedMotion={false}
+                      onCycle={cycleMode}
+                      scrollProgress={scrollYProgress}
+                    />
+                  </Suspense>
+                </RenderBoundary>
+              ) : (
+                <div className="forge-canvas-fallback" aria-hidden="true">
+                  <span />
+                </div>
+              )}
             </ClientOnly>
             <div className="forge-reticle" aria-hidden="true" />
             <p className="forge-interaction-hint">
               <MousePointer2 size={13} aria-hidden="true" />
-              Move to bend · click to shift
+              {allowWebGL && !reduceMotion
+                ? "Move to bend · scroll to assemble"
+                : "Static performance mode"}
             </p>
           </div>
 

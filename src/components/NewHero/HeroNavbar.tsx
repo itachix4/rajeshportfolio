@@ -103,6 +103,7 @@ const HeroNavbar = () => {
               {link.label}
             </a>
           ))}
+          <a className="desktop-nav__lab" href="/lab">Lab ↗</a>
         </nav>
 
         <div className="header-mode-switch" role="group" aria-label="Choose website perspective">
@@ -165,6 +166,16 @@ const HeroNavbar = () => {
                   {link.label}
                 </motion.a>
               ))}
+              <motion.a
+                href="/lab"
+                onClick={closeMenu}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.28, delay: NAV_LINKS.length * 0.04 }}
+              >
+                <span>05</span>
+                Lab ↗
+              </motion.a>
             </nav>
             <div className="mobile-mode-switch" role="group" aria-label="Choose website perspective">
               <span>Perspective</span>

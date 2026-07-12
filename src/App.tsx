@@ -10,27 +10,32 @@ import CareerSection from "./components/NewSite/CareerSection";
 import TechMarquee from "./components/NewSite/TechMarquee";
 import ContactFooter from "./components/NewSite/ContactFooter";
 import MobileProjectCTA from "./components/NewSite/MobileProjectCTA";
+import LabPage from "./components/Lab/LabPage";
 
-const App = () => (
+const PortfolioPage = () => (
   <BuildModeProvider>
-    <MotionConfig reducedMotion="user">
-      <a className="skip-link" href="#main-content">
-        Skip to content
-      </a>
-      <HeroNavbar />
-      <main id="main-content">
-        <HeroSection />
-        <MarqueeBand />
-        <WorkSection />
-        <AboutSection />
-        <ServicesSection />
-        <CareerSection />
-        <TechMarquee />
-      </main>
-      <ContactFooter />
-      <MobileProjectCTA />
-    </MotionConfig>
+    <a className="skip-link" href="#main-content">
+      Skip to content
+    </a>
+    <HeroNavbar />
+    <main id="main-content">
+      <HeroSection />
+      <MarqueeBand />
+      <WorkSection />
+      <AboutSection />
+      <ServicesSection />
+      <CareerSection />
+      <TechMarquee />
+    </main>
+    <ContactFooter />
+    <MobileProjectCTA />
   </BuildModeProvider>
+);
+
+const App = ({ pathname = "/" }: { pathname?: string }) => (
+  <MotionConfig reducedMotion="user">
+    {pathname.startsWith("/lab") ? <LabPage /> : <PortfolioPage />}
+  </MotionConfig>
 );
 
 export default App;

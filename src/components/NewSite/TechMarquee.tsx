@@ -5,6 +5,8 @@ import { BuildMode, useBuildMode } from "../buildMode";
 import { WORKBENCH_MODES } from "./data";
 import { Reveal } from "./Reveal";
 import ClientOnly from "../ClientOnly";
+import useAdaptiveWebGL from "../useAdaptiveWebGL";
+import RenderBoundary from "../RenderBoundary";
 
 const SkillConstellationScene = lazy(() => import("./SkillConstellationScene"));
 
@@ -14,6 +16,7 @@ const SkillWorkbench = () => {
   const { mode: modeId, setMode: setModeId } = useBuildMode();
   const [skillIndex, setSkillIndex] = useState(0);
   const reduceMotion = useReducedMotion();
+  const allowWebGL = useAdaptiveWebGL();
   const detailId = useId();
   const orderedModes = MODE_ORDER.map(
     (id) => WORKBENCH_MODES.find((mode) => mode.id === id) ?? WORKBENCH_MODES[0]
@@ -97,14 +100,28 @@ const SkillWorkbench = () => {
                   </div>
                 }
               >
-                <Suspense fallback={null}>
-                  <SkillConstellationScene
-                    mode={modeId}
-                    activeSkillIndex={skillIndex}
-                    reducedMotion={Boolean(reduceMotion)}
-                    onSelectSkill={setSkillIndex}
-                  />
-                </Suspense>
+                {allowWebGL && !reduceMotion ? (
+                  <RenderBoundary
+                    fallback={
+                      <div className="constellation-fallback" aria-hidden="true">
+                        <span />
+                      </div>
+                    }
+                  >
+                    <Suspense fallback={null}>
+                      <SkillConstellationScene
+                        mode={modeId}
+                        activeSkillIndex={skillIndex}
+                        reducedMotion={false}
+                        onSelectSkill={setSkillIndex}
+                      />
+                    </Suspense>
+                  </RenderBoundary>
+                ) : (
+                  <div className="constellation-fallback" aria-hidden="true">
+                    <span />
+                  </div>
+                )}
               </ClientOnly>
               <div className="constellation-core-label" aria-hidden="true">
                 <span>OUTCOME</span>

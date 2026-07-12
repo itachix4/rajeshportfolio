@@ -1,6 +1,7 @@
 import { Canvas, ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import type { MotionValue } from "motion/react";
 import type { BuildMode } from "../buildMode";
 import CanvasFrameBudget from "../CanvasFrameBudget";
 
@@ -10,12 +11,122 @@ type ForgeSceneProps = {
   mode: ForgeMode;
   reducedMotion: boolean;
   onCycle: () => void;
+  scrollProgress: MotionValue<number>;
 };
 
 const MODE_COLORS: Record<ForgeMode, string> = {
   engineer: "#ff6b35",
   designer: "#ff6b35",
   founder: "#ff6b35",
+};
+
+const SIGNAL_FIELD_VERTEX = /* glsl */ `
+  uniform float uTime;
+  uniform vec2 uPointer;
+  uniform float uScroll;
+
+  varying vec3 vViewNormal;
+  varying vec3 vViewPosition;
+  varying float vDisplacement;
+
+  void main() {
+    // Two crossing waves create an organic field without a texture lookup.
+    // Their frequencies are deliberately non-multiples, avoiding obvious loops.
+    float travelingWave = sin(position.y * 4.1 + uTime * 0.9 + uPointer.x * 1.6);
+    float crossWave = sin(position.x * 5.3 - uTime * 0.7)
+      * cos(position.z * 4.7 + uTime * 0.52 + uPointer.y);
+    float scrollWave = sin((position.y + uScroll) * 7.0) * uScroll;
+    float pointerEnergy = 0.8 + length(uPointer) * 0.32;
+
+    vDisplacement = (
+      travelingWave * 0.052
+      + crossWave * 0.038
+      + scrollWave * 0.032
+    ) * pointerEnergy;
+
+    vec3 displacedPosition = position + normal * vDisplacement;
+    vec4 viewPosition = modelViewMatrix * vec4(displacedPosition, 1.0);
+
+    vViewPosition = viewPosition.xyz;
+    vViewNormal = normalize(normalMatrix * normal);
+    gl_Position = projectionMatrix * viewPosition;
+  }
+`;
+
+const SIGNAL_FIELD_FRAGMENT = /* glsl */ `
+  uniform float uTime;
+  uniform vec3 uColor;
+
+  varying vec3 vViewNormal;
+  varying vec3 vViewPosition;
+  varying float vDisplacement;
+
+  void main() {
+    vec3 viewDirection = normalize(-vViewPosition);
+    float facing = abs(dot(normalize(vViewNormal), viewDirection));
+    float fresnel = pow(1.0 - facing, 2.25);
+    float interference = 0.5 + 0.5 * sin(vDisplacement * 82.0 - uTime * 1.35);
+    float alpha = fresnel * (0.16 + interference * 0.24);
+    vec3 hotEdge = vec3(1.0, 0.66, 0.43);
+    vec3 color = mix(uColor, hotEdge, fresnel * 0.58);
+
+    if (alpha < 0.018) discard;
+    gl_FragColor = vec4(color, alpha);
+  }
+`;
+
+const SignalField = ({ scrollProgress }: Pick<ForgeSceneProps, "scrollProgress">) => {
+  const material = useRef<THREE.ShaderMaterial>(null);
+  const mesh = useRef<THREE.Mesh>(null);
+  const pointerVelocity = useRef(new THREE.Vector2());
+  const { pointer } = useThree();
+  const uniforms = useMemo(
+    () => ({
+      uTime: { value: 0 },
+      uPointer: { value: new THREE.Vector2() },
+      uScroll: { value: 0 },
+      uColor: { value: new THREE.Color("#ff6b35") },
+    }),
+    [],
+  );
+
+  useFrame(({ clock }, delta) => {
+    if (!material.current || !mesh.current) return;
+
+    // Damping makes pointer and scroll input frame-rate independent.
+    pointerVelocity.current.x = THREE.MathUtils.damp(
+      pointerVelocity.current.x,
+      pointer.x,
+      5,
+      delta,
+    );
+    pointerVelocity.current.y = THREE.MathUtils.damp(
+      pointerVelocity.current.y,
+      pointer.y,
+      5,
+      delta,
+    );
+    material.current.uniforms.uTime.value = clock.elapsedTime;
+    material.current.uniforms.uPointer.value.copy(pointerVelocity.current);
+    material.current.uniforms.uScroll.value = scrollProgress.get();
+    mesh.current.rotation.y = clock.elapsedTime * 0.055 + scrollProgress.get() * 0.8;
+    mesh.current.rotation.z = scrollProgress.get() * -0.32;
+  });
+
+  return (
+    <mesh ref={mesh} scale={1.42}>
+      <icosahedronGeometry args={[1.18, 4]} />
+      <shaderMaterial
+        ref={material}
+        vertexShader={SIGNAL_FIELD_VERTEX}
+        fragmentShader={SIGNAL_FIELD_FRAGMENT}
+        uniforms={uniforms}
+        transparent
+        depthWrite={false}
+        side={THREE.DoubleSide}
+      />
+    </mesh>
+  );
 };
 
 const stopAndCycle = (event: ThreeEvent<MouseEvent>, onCycle: () => void) => {
@@ -32,7 +143,7 @@ const EngineerCore = () => (
     <mesh scale={1.055}>
       <torusKnotGeometry args={[1.08, 0.3, 120, 18, 2, 3]} />
       <meshBasicMaterial
-        color="#d7f4ff"
+        color="#ffd0b8"
         transparent
         opacity={0.2}
         wireframe
@@ -93,6 +204,7 @@ const InteractiveCore = ({
   mode,
   reducedMotion,
   onCycle,
+  scrollProgress,
 }: ForgeSceneProps) => {
   const group = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
@@ -111,9 +223,12 @@ const InteractiveCore = ({
     if (!group.current) return;
 
     const drift = reducedMotion ? 0 : clock.elapsedTime * 0.14;
-    const targetX = reducedMotion ? 0.08 : -pointer.y * 0.34 + Math.sin(clock.elapsedTime * 0.42) * 0.08;
-    const targetY = pointer.x * 0.55 + drift;
-    const targetScale = hovered ? 1.07 : 1;
+    const scroll = scrollProgress.get();
+    const targetX = reducedMotion
+      ? 0.08
+      : -pointer.y * 0.34 + Math.sin(clock.elapsedTime * 0.42) * 0.08 + scroll * 0.2;
+    const targetY = pointer.x * 0.55 + drift + scroll * 1.05;
+    const targetScale = (hovered ? 1.07 : 1) - scroll * 0.08;
 
     group.current.rotation.x = THREE.MathUtils.damp(
       group.current.rotation.x,
@@ -152,14 +267,14 @@ const InteractiveCore = ({
   );
 };
 
-const OrbitRig = ({ mode, reducedMotion }: Omit<ForgeSceneProps, "onCycle">) => {
+const OrbitRig = ({ mode, reducedMotion, scrollProgress }: Omit<ForgeSceneProps, "onCycle">) => {
   const group = useRef<THREE.Group>(null);
 
   useFrame(({ clock }, delta) => {
     if (!group.current || reducedMotion) return;
     group.current.rotation.z = THREE.MathUtils.damp(
       group.current.rotation.z,
-      clock.elapsedTime * -0.08,
+      clock.elapsedTime * -0.08 - scrollProgress.get() * 0.7,
       2,
       delta
     );
@@ -232,7 +347,12 @@ const ForgeWorld = (props: ForgeSceneProps) => (
     <pointLight position={[-3, -2, 2]} color={MODE_COLORS[props.mode]} intensity={10} />
     <pointLight position={[0, 0, -2]} color="#ffffff" intensity={5} />
     <ParticleField mode={props.mode} />
-    <OrbitRig mode={props.mode} reducedMotion={props.reducedMotion} />
+    <SignalField scrollProgress={props.scrollProgress} />
+    <OrbitRig
+      mode={props.mode}
+      reducedMotion={props.reducedMotion}
+      scrollProgress={props.scrollProgress}
+    />
     <InteractiveCore {...props} />
   </>
 );
