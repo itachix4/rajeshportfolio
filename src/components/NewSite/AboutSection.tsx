@@ -28,17 +28,17 @@ const AboutSection = () => {
             role="img"
             aria-label="Interactive AI-rendered digital twin of Parth Parwani"
           >
-            <Suspense
-              fallback={(
-                <img
-                  src="/images/parth-digital-twin-960.jpg"
-                  alt=""
-                  width="960"
-                  height="1280"
-                  loading="lazy"
-                />
-              )}
-            >
+            <img
+              className="digital-twin-frame__fallback"
+              src="/images/parth-digital-twin.jpg"
+              srcSet="/images/parth-digital-twin-960.jpg 720w, /images/parth-digital-twin.jpg 1350w"
+              sizes="(max-width: 900px) calc(100vw - 32px), 42vw"
+              alt=""
+              width="1350"
+              height="1800"
+              loading="lazy"
+            />
+            <Suspense fallback={null}>
               <DigitalTwinScene mode={mode} reducedMotion={reducedMotion} />
             </Suspense>
           </div>

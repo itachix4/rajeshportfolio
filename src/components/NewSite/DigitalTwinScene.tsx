@@ -66,7 +66,6 @@ const TwinWorld = ({ mode, reducedMotion }: DigitalTwinSceneProps) => {
 
   return (
     <>
-      <color attach="background" args={["#050505"]} />
       <fog attach="fog" args={["#050505", 5.2, 9]} />
 
       <group ref={rig}>
@@ -113,7 +112,8 @@ const DigitalTwinScene = ({ mode, reducedMotion }: DigitalTwinSceneProps) => (
     aria-hidden="true"
     camera={{ position: [0, 0, 5.45], fov: 43 }}
     dpr={[1, 1.5]}
-    gl={{ alpha: false, antialias: true, powerPreference: "high-performance" }}
+    gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
+    onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
   >
     <TwinWorld mode={mode} reducedMotion={reducedMotion} />
   </Canvas>
