@@ -17,9 +17,9 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/images/preview.png",
-        width: 1450,
-        height: 828,
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
         alt: "Parth Parwani portfolio preview",
       },
     ],
@@ -28,14 +28,14 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Parth Parwani — Creative Developer & UI Engineer",
     description: "Founder of ForgeLane. Design, code and strategy in one product-minded practice.",
-    images: ["/images/preview.png"],
+    images: ["/opengraph-image"],
   },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#080808",
+  themeColor: "#0b1830",
   colorScheme: "dark",
 };
 

@@ -5,11 +5,11 @@ import { BuildModeProvider } from "./components/BuildModeProvider";
 import LabPage from "./components/Lab/LabPage";
 import PortfolioAssistant from "./components/Experience/PortfolioAssistant";
 import CoreRuntimeBridge from "./components/CoreRuntimeBridge";
-import SpatialPortfolio from "./components/Spatial/SpatialPortfolio";
+import EditorialPortfolio from "./components/Editorial/EditorialPortfolio";
 
 const PortfolioPage = () => (
   <BuildModeProvider>
-    <SpatialPortfolio />
+    <EditorialPortfolio />
     <PortfolioAssistant />
   </BuildModeProvider>
 );
