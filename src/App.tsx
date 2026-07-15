@@ -14,6 +14,7 @@ import LabPage from "./components/Lab/LabPage";
 import CinematicHero from "./components/Experience/CinematicHero";
 import ProjectGalaxy from "./components/Experience/ProjectGalaxy";
 import PortfolioAssistant from "./components/Experience/PortfolioAssistant";
+import CoreRuntimeBridge from "./components/CoreRuntimeBridge";
 
 const PortfolioPage = () => (
   <BuildModeProvider>
@@ -39,6 +40,7 @@ const PortfolioPage = () => (
 const App = ({ pathname = "/" }: { pathname?: string }) => (
   <MotionConfig reducedMotion="user">
     {pathname.startsWith("/lab") ? <LabPage /> : <PortfolioPage />}
+    <CoreRuntimeBridge />
   </MotionConfig>
 );
 

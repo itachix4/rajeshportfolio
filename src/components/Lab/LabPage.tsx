@@ -3,12 +3,18 @@ import { AnimatePresence, motion } from "motion/react";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { PhoneFrame } from "./LabOS";
 import type { LabApp } from "./labData";
+import { LabRuntimeProvider } from "./runtime/LabRuntime";
 
 const LabPage = () => {
   const [activeApp, setActiveApp] = useState<LabApp | null>(null);
 
   return (
-    <div className="lab-os-page" data-active-app={activeApp?.preview ?? "home"}>
+    <LabRuntimeProvider>
+    <div
+      className="lab-os-page"
+      data-active-app={activeApp?.preview ?? "home"}
+      data-app-open={activeApp ? "true" : "false"}
+    >
       <a className="skip-link" href="#lab-os-device">Skip to PARTH LAB OS</a>
       <motion.div
         className="lab-os-ambient"
@@ -20,13 +26,13 @@ const LabPage = () => {
 
       <header className="lab-os-nav">
         <a href="/" aria-label="Return to Parth Parwani portfolio"><span>P.</span><strong>Parth Lab</strong></a>
-        <div><i aria-hidden="true" /><span>OS BUILD 1.0</span></div>
+        <div><i aria-hidden="true" /><span>OS BUILD 2.0</span></div>
         <a href="/" className="lab-os-nav__back"><ArrowLeft size={15} /> Portfolio</a>
       </header>
 
       <main className="lab-os-stage">
         <div className="lab-os-background-copy">
-          <span>EXPERIMENTAL SYSTEM / 08 APPS</span>
+          <span>EXPERIMENTAL SYSTEM / 08 APPS + 01 HIDDEN</span>
           <h1>An operating system<br />for unfinished ideas.</h1>
           <p>Open an app. Inspect the system. Break the expected path.</p>
         </div>
@@ -55,6 +61,7 @@ const LabPage = () => {
         </aside>
       </main>
     </div>
+    </LabRuntimeProvider>
   );
 };
 

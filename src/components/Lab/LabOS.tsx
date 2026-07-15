@@ -1,7 +1,6 @@
 import {
-  lazy,
-  KeyboardEvent as ReactKeyboardEvent,
-  PointerEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type PointerEvent,
   Suspense,
   useCallback,
   useEffect,
@@ -16,13 +15,10 @@ import {
   useReducedMotion,
   useSpring,
 } from "motion/react";
-import { ArrowLeft, ArrowUpRight, ChevronLeft, ChevronRight, Code2 } from "lucide-react";
-import ClientOnly from "../ClientOnly";
-import RenderBoundary from "../RenderBoundary";
-import useAdaptiveWebGL from "../useAdaptiveWebGL";
-import { LAB_APPS, LabApp, LabIcon, LabStatus } from "./labData";
-
-const LabScene = lazy(() => import("./LabScene"));
+import { ArrowLeft, Volume2, VolumeX } from "lucide-react";
+import { CORE_APP, LAB_APPS, type LabApp, type LabIcon, type LabStatus } from "./labData";
+import { LabApplication } from "./apps/LabApplication";
+import { useLabRuntime } from "./runtime/LabRuntime";
 
 const LabGlyph = ({ icon }: { icon: LabIcon }) => {
   const common = { viewBox: "0 0 32 32", fill: "none", xmlns: "http://www.w3.org/2000/svg" };
@@ -44,6 +40,8 @@ const LabGlyph = ({ icon }: { icon: LabIcon }) => {
       return <svg {...common}><path d="M5 9h22v18H5zM3 5h26v6H3z"/><path d="M12 16h8"/></svg>;
     case "about":
       return <svg {...common}><circle cx="16" cy="16" r="12"/><path d="M16 14v8M16 9v1"/></svg>;
+    case "core":
+      return <svg {...common}><path d="M16 3 27 9v14l-11 6-11-6V9l11-6Z"/><circle cx="16" cy="16" r="5"/><path d="M16 3v8M27 9l-7 4M27 23l-7-4M16 29v-8M5 23l7-4M5 9l7 4"/></svg>;
   }
 };
 
@@ -55,50 +53,6 @@ export const StatusBadge = ({ status, compact = false }: { status: LabStatus; co
   </span>
 );
 
-export const ProgressIndicator = ({ value }: { value: number }) => {
-  const reducedMotion = useReducedMotion();
-
-  return (
-    <div className="lab-os-progress" aria-label={`${value}% complete`}>
-      <div><span>Progress</span><strong>{value}%</strong></div>
-      <div aria-hidden="true">
-        <motion.span
-          initial={reducedMotion ? false : { scaleX: 0 }}
-          animate={{ scaleX: value / 100 }}
-          transition={{ type: "spring", stiffness: 90, damping: 20, delay: 0.12 }}
-        />
-      </div>
-    </div>
-  );
-};
-
-const StaticPreview = ({ app }: { app: LabApp }) => (
-  <div className={`lab-os-preview-art lab-os-preview-art--${app.preview}`} aria-hidden="true">
-    <span /><span /><span /><span />
-    <strong>{app.number}</strong>
-  </div>
-);
-
-const ExperimentPreview = ({ app }: { app: LabApp }) => {
-  const reducedMotion = Boolean(useReducedMotion());
-  const allowWebGL = useAdaptiveWebGL({ requireWebGL2: true }) && !reducedMotion;
-
-  if (!app.liveScene || !allowWebGL) return <StaticPreview app={app} />;
-
-  return (
-    <div className="lab-os-live-preview">
-      <StaticPreview app={app} />
-      <ClientOnly>
-        <RenderBoundary fallback={null}>
-          <Suspense fallback={null}>
-            <LabScene kind={app.liveScene} />
-          </Suspense>
-        </RenderBoundary>
-      </ClientOnly>
-    </div>
-  );
-};
-
 export const AppIcon = ({ app, index, onOpen }: {
   app: LabApp;
   index: number;
@@ -109,19 +63,20 @@ export const AppIcon = ({ app, index, onOpen }: {
   return (
     <motion.button
       type="button"
-      className="lab-os-app-icon"
+      className={`lab-os-app-icon${app.id === "core" ? " is-core" : ""}`}
       data-lab-app={app.id}
       aria-label={`Open ${app.title}. Status: ${app.status}`}
       onClick={() => onOpen(app)}
       initial={reducedMotion ? false : { opacity: 0, y: 15, scale: 0.94 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: "spring", stiffness: 240, damping: 22, delay: index * 0.035 }}
-      whileHover={reducedMotion ? undefined : { y: -4 }}
+      whileHover={reducedMotion ? undefined : { y: app.id === "core" ? -2 : -4 }}
       whileTap={reducedMotion ? undefined : { scale: 0.95 }}
     >
       <motion.span className={`lab-os-app-icon__tile is-${app.icon}`} layoutId={`lab-app-${app.id}`}>
         <LabGlyph icon={app.icon} />
         <StatusBadge status={app.status} compact />
+        {app.clue && <i className="lab-os-app-icon__clue" aria-label="This app contains a CORE trace" />}
       </motion.span>
       <span>{app.title}</span>
     </motion.button>
@@ -129,6 +84,9 @@ export const AppIcon = ({ app, index, onOpen }: {
 };
 
 export const HomeScreen = ({ onOpen }: { onOpen: (app: LabApp) => void }) => {
+  const { clues } = useLabRuntime();
+  const apps = clues.coreUnlocked ? [...LAB_APPS, CORE_APP] : LAB_APPS;
+
   const handleArrowNavigation = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (!event.key.startsWith("Arrow")) return;
     const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>("button"));
@@ -145,7 +103,7 @@ export const HomeScreen = ({ onOpen }: { onOpen: (app: LabApp) => void }) => {
 
   return (
     <motion.section
-      className="lab-os-home"
+      className={`lab-os-home${clues.coreUnlocked ? " has-core" : ""}`}
       aria-label="PARTH LAB OS home screen"
       initial={{ opacity: 0, scale: 1.035 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -153,14 +111,14 @@ export const HomeScreen = ({ onOpen }: { onOpen: (app: LabApp) => void }) => {
     >
       <div className="lab-os-home__top">
         <div><span>PARTH</span><strong>LAB OS</strong></div>
-        <span>08 APPS / SYSTEM LIVE</span>
+        <span>{clues.coreUnlocked ? "09 APPS / CORE ONLINE" : "08 APPS / SYSTEM LIVE"}</span>
       </div>
       <div className="lab-os-home__statement">
-        <span>Experimental build 1.0</span>
-        <p>Ideas become interfaces here.</p>
+        <span>Experimental build 2.0</span>
+        <p>{clues.coreUnlocked ? "The system opened inward." : "Ideas become instruments here."}</p>
       </div>
       <div className="lab-os-grid" role="group" aria-label="Lab applications" onKeyDown={handleArrowNavigation}>
-        {LAB_APPS.map((app, index) => (
+        {apps.map((app, index) => (
           <AppIcon key={app.id} app={app} index={index} onOpen={onOpen} />
         ))}
       </div>
@@ -193,87 +151,64 @@ export const LockScreen = ({ phase, onUnlock }: {
   </motion.button>
 );
 
-export const NavigationControls = ({ onPrevious, onNext, onHome }: {
-  onPrevious: () => void;
-  onNext: () => void;
-  onHome: () => void;
-}) => (
-  <nav className="lab-os-window__navigation" aria-label="Experiment navigation">
-    <button type="button" onClick={onPrevious} aria-label="Previous experiment"><ChevronLeft size={17} /></button>
-    <button type="button" onClick={onHome}>All apps</button>
-    <button type="button" onClick={onNext} aria-label="Next experiment"><ChevronRight size={17} /></button>
-  </nav>
+const AppLoadingState = ({ app }: { app: LabApp }) => (
+  <div className={`lab-app-loading is-${app.preview}`} role="status">
+    <span aria-hidden="true"><i /><i /><i /></span>
+    <strong>Opening {app.title}</strong>
+    <small>Loading only this instrument</small>
+  </div>
 );
 
-export const AppWindow = ({ app, onHome, onPrevious, onNext }: {
-  app: LabApp;
-  onHome: () => void;
-  onPrevious: () => void;
-  onNext: () => void;
-}) => {
+export const AppWindow = ({ app, onHome }: { app: LabApp; onHome: () => void }) => {
   const swipeStart = useRef<number | null>(null);
   const backButton = useRef<HTMLButtonElement>(null);
+  const { soundEnabled, toggleSound, playSound } = useLabRuntime();
 
   useEffect(() => {
     backButton.current?.focus();
-  }, [app.id]);
+    playSound(app.id === "core" ? "core" : "system");
+  }, [app.id, playSound]);
 
   const beginSwipe = (event: PointerEvent<HTMLElement>) => {
     swipeStart.current = event.clientY;
   };
   const finishSwipe = (event: PointerEvent<HTMLElement>) => {
-    if (swipeStart.current !== null && event.clientY - swipeStart.current < -62) onHome();
+    if (swipeStart.current !== null && event.clientY - swipeStart.current < -72) onHome();
     swipeStart.current = null;
   };
-  const external = (url: string) => url.startsWith("http");
 
   return (
     <motion.article
-      className="lab-os-window"
+      className={`lab-app-host lab-app-host--${app.id}`}
+      data-app-id={app.id}
       layoutId={`lab-app-${app.id}`}
-      aria-labelledby="lab-window-title"
+      aria-labelledby="lab-app-title"
       onPointerDown={beginSwipe}
       onPointerUp={finishSwipe}
-      transition={{ type: "spring", stiffness: 270, damping: 27, mass: 0.75 }}
+      transition={{ type: "spring", stiffness: 250, damping: 27, mass: 0.8 }}
     >
-      <header className="lab-os-window__header">
+      <header className="lab-app-chrome">
         <button ref={backButton} type="button" onClick={onHome} aria-label="Return to Lab OS home">
-          <ArrowLeft size={17} />
+          <ArrowLeft size={17} aria-hidden="true" />
         </button>
-        <span>{app.number}</span>
-        <StatusBadge status={app.status} />
+        <div>
+          <span>{app.number}</span>
+          <strong id="lab-app-title">{app.title}</strong>
+        </div>
+        <button
+          type="button"
+          onClick={toggleSound}
+          aria-label={soundEnabled ? "Mute Lab sound design" : "Enable Lab sound design"}
+          aria-pressed={soundEnabled}
+        >
+          {soundEnabled ? <Volume2 size={16} aria-hidden="true" /> : <VolumeX size={16} aria-hidden="true" />}
+        </button>
       </header>
 
-      <div className="lab-os-window__scroll">
-        <div className="lab-os-window__intro">
-          <span className={`lab-os-window__icon is-${app.icon}`}><LabGlyph icon={app.icon} /></span>
-          <div><h2 id="lab-window-title">{app.title}</h2><p>{app.description}</p></div>
-        </div>
-
-        <div className="lab-os-window__meta">
-          <ProgressIndicator value={app.progress} />
-          <div><span>Updated</span><strong>{app.updatedAt}</strong></div>
-        </div>
-
-        <ExperimentPreview app={app} />
-
-        <div className="lab-os-window__technologies" aria-label="Technologies used">
-          {app.technologies.map((technology) => <span key={technology}>{technology}</span>)}
-        </div>
-
-        <div className="lab-os-window__notes">
-          <section><span>Key challenge</span><p>{app.challenge}</p></section>
-          <section><span>What I learned</span><p>{app.learning}</p></section>
-        </div>
-
-        <div className="lab-os-window__actions">
-          <a href={app.liveUrl} target={external(app.liveUrl) ? "_blank" : undefined} rel={external(app.liveUrl) ? "noreferrer" : undefined}>
-            Launch experiment <ArrowUpRight size={15} />
-          </a>
-          <a href={app.codeUrl} target="_blank" rel="noreferrer"><Code2 size={15} /> View code</a>
-        </div>
-
-        <NavigationControls onPrevious={onPrevious} onNext={onNext} onHome={onHome} />
+      <div className="lab-app-runtime">
+        <Suspense fallback={<AppLoadingState app={app} />}>
+          <LabApplication app={app} onHome={onHome} />
+        </Suspense>
       </div>
 
       <button className="lab-os-home-indicator" type="button" onClick={onHome} aria-label="Return to home screen" />
@@ -281,9 +216,7 @@ export const AppWindow = ({ app, onHome, onPrevious, onNext }: {
   );
 };
 
-export const PhoneFrame = ({ onActiveChange }: {
-  onActiveChange?: (app: LabApp | null) => void;
-}) => {
+export const PhoneFrame = ({ onActiveChange }: { onActiveChange?: (app: LabApp | null) => void }) => {
   const reducedMotion = Boolean(useReducedMotion());
   const [phase, setPhase] = useState<"lock" | "unlocking" | "home">(reducedMotion ? "home" : "lock");
   const [activeApp, setActiveApp] = useState<LabApp | null>(null);
@@ -297,8 +230,8 @@ export const PhoneFrame = ({ onActiveChange }: {
 
   useEffect(() => {
     if (reducedMotion) {
-      setPhase("home");
-      return;
+      const immediate = window.setTimeout(() => setPhase("home"), 0);
+      return () => window.clearTimeout(immediate);
     }
     const unlockTimer = window.setTimeout(() => setPhase("unlocking"), 820);
     const homeTimer = window.setTimeout(() => setPhase("home"), 1420);
@@ -327,10 +260,7 @@ export const PhoneFrame = ({ onActiveChange }: {
     manualUnlockRequested.current = true;
     setPhase("unlocking");
     if (manualUnlockTimer.current !== null) window.clearTimeout(manualUnlockTimer.current);
-    manualUnlockTimer.current = window.setTimeout(
-      () => setPhase("home"),
-      reducedMotion ? 0 : 430,
-    );
+    manualUnlockTimer.current = window.setTimeout(() => setPhase("home"), reducedMotion ? 0 : 430);
   }, [phase, reducedMotion]);
   const openApp = useCallback((app: LabApp) => setActiveApp(app), []);
   const closeApp = useCallback(() => {
@@ -340,29 +270,22 @@ export const PhoneFrame = ({ onActiveChange }: {
       document.querySelector<HTMLButtonElement>(`[data-lab-app="${previousId}"]`)?.focus();
     });
   }, [activeApp?.id]);
-  const navigate = useCallback((direction: number) => {
-    setActiveApp((current) => {
-      const currentIndex = current ? LAB_APPS.findIndex((app) => app.id === current.id) : 0;
-      return LAB_APPS[(currentIndex + direction + LAB_APPS.length) % LAB_APPS.length];
-    });
-  }, []);
 
   useEffect(() => {
     const handleKeys = (event: KeyboardEvent) => {
       if (!activeApp) return;
-      if (event.key === "Escape" || event.key === "ArrowUp") closeApp();
-      if (event.key === "ArrowLeft") navigate(-1);
-      if (event.key === "ArrowRight") navigate(1);
+      if (event.key === "Escape") closeApp();
     };
     window.addEventListener("keydown", handleKeys);
     return () => window.removeEventListener("keydown", handleKeys);
-  }, [activeApp, closeApp, navigate]);
+  }, [activeApp, closeApp]);
+
   const cacheBounds = (event: PointerEvent<HTMLDivElement>) => {
-    if (reducedMotion || event.pointerType !== "mouse") return;
+    if (reducedMotion || activeApp || event.pointerType !== "mouse") return;
     bounds.current = event.currentTarget.getBoundingClientRect();
   };
   const tilt = (event: PointerEvent<HTMLDivElement>) => {
-    if (!bounds.current || reducedMotion || event.pointerType !== "mouse") return;
+    if (!bounds.current || reducedMotion || activeApp || event.pointerType !== "mouse") return;
     const x = (event.clientX - bounds.current.left) / bounds.current.width - 0.5;
     const y = (event.clientY - bounds.current.top) / bounds.current.height - 0.5;
     rawRotateX.set(y * -4.5);
@@ -382,8 +305,10 @@ export const PhoneFrame = ({ onActiveChange }: {
       transition={{ type: "spring", stiffness: 70, damping: 18, mass: 1.05 }}
     >
       <motion.div
-        className="lab-device"
-        style={reducedMotion ? undefined : { rotateX, rotateY }}
+        className={`lab-device${activeApp ? " is-app-open" : ""}`}
+        data-open-app={activeApp?.id}
+        layout
+        style={reducedMotion || activeApp ? undefined : { rotateX, rotateY }}
         onPointerEnter={cacheBounds}
         onPointerMove={tilt}
         onPointerLeave={releaseTilt}
@@ -396,15 +321,7 @@ export const PhoneFrame = ({ onActiveChange }: {
             <AnimatePresence mode="popLayout" initial={false}>
               {phase !== "home" && <LockScreen key="lock" phase={phase} onUnlock={unlock} />}
               {phase === "home" && !activeApp && <HomeScreen key="home" onOpen={openApp} />}
-              {phase === "home" && activeApp && (
-                <AppWindow
-                  key={activeApp.id}
-                  app={activeApp}
-                  onHome={closeApp}
-                  onPrevious={() => navigate(-1)}
-                  onNext={() => navigate(1)}
-                />
-              )}
+              {phase === "home" && activeApp && <AppWindow key={activeApp.id} app={activeApp} onHome={closeApp} />}
             </AnimatePresence>
           </LayoutGroup>
         </div>
