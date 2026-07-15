@@ -1,15 +1,19 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { MotionConfig } from "motion/react";
 import { BuildModeProvider } from "./components/BuildModeProvider";
-import LabPage from "./components/Lab/LabPage";
 import PortfolioAssistant from "./components/Experience/PortfolioAssistant";
 import CoreRuntimeBridge from "./components/CoreRuntimeBridge";
-import EditorialPortfolio from "./components/Editorial/EditorialPortfolio";
+import GridPortfolio from "./components/GridPortfolio/GridPortfolio";
+
+const LabPage = dynamic(() => import("./components/Lab/LabPage"), {
+  loading: () => <main className="lab-route-loading" aria-label="Loading PARTH LAB OS"><span>PARTH LAB OS</span></main>,
+});
 
 const PortfolioPage = () => (
   <BuildModeProvider>
-    <EditorialPortfolio />
+    <GridPortfolio />
     <PortfolioAssistant />
   </BuildModeProvider>
 );

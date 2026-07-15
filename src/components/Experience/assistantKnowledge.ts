@@ -57,11 +57,35 @@ const KNOWLEDGE: KnowledgeEntry[] = [
     },
   },
   {
+    id: "krish-veneer",
+    terms: ["krish", "veneer", "plywood", "liberia", "forest", "flagship"],
+    answer: {
+      text: "Krish Veneer is Parth's flagship brand experience for a premium veneer and plywood manufacturer in Liberia. The design turns material quality, legal sourcing and an eight-stage craft process into a cinematic product narrative without losing industrial credibility.",
+      action: { label: "View Krish Veneer", href: "https://krishveneer.com" },
+    },
+  },
+  {
+    id: "north-star",
+    terms: ["north star", "northstar", "metal", "recycling", "scrap"],
+    answer: {
+      text: "North Star is an industrial brand platform for a metal trading and recycling company operating across West Africa. Parth organised sourcing, processing, logistics and sustainability into a direct service story designed to build trust and lead people toward contact.",
+      action: { label: "View North Star", href: "https://northstarlib.com" },
+    },
+  },
+  {
+    id: "finance-for-teens",
+    terms: ["finance for teens", "finance", "teens", "education", "financial education"],
+    answer: {
+      text: "Finance for Teens makes money fundamentals approachable for younger learners while keeping courses and programmes clear for parents and schools. The work focuses on friendly communication, simple content architecture and an easy route from curiosity to enrolment.",
+      action: { label: "View Finance for Teens", href: "https://financeforteens.com" },
+    },
+  },
+  {
     id: "favourite",
     terms: ["favourite", "favorite", "best project", "show project", "work"],
     answer: {
-      text: "ForgeLane is the clearest expression of Parth's current practice because it is more than a website: it combines entrepreneurship, positioning, brand direction, UI/UX and engineering. It also remains an active venture, so the system keeps evolving instead of becoming a frozen portfolio artifact.",
-      action: { label: "Fly to ForgeLane", href: "#work" },
+      text: "Krish Veneer is the strongest expression of Parth's current web craft: a premium material story translated into art direction, information hierarchy, motion and frontend execution. ForgeLane is the wider expression of his founder mindset, so the two projects show different sides of the same practice.",
+      action: { label: "Explore selected work", href: "#work" },
     },
   },
   {

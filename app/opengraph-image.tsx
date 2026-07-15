@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Parth Parwani — Creative Developer, UI Engineer and Founder";
+export const alt = "Parth Parwani — Crafted to move. Built to work.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -14,127 +14,63 @@ export default function OpenGraphImage() {
           width: "100%",
           height: "100%",
           overflow: "hidden",
-          background: "#0b1830",
-          color: "#f0eadb",
+          background: "#163ee8",
+          color: "#f2eddf",
           fontFamily: "Arial, Helvetica, sans-serif",
         }}
       >
+        {[300, 600, 900].map((left) => (
+          <div key={left} style={{ position: "absolute", top: 0, bottom: 0, left, display: "flex", width: 1, background: "rgba(242,237,223,.2)" }} />
+        ))}
+        <div style={{ position: "absolute", top: 315, right: 0, left: 0, display: "flex", height: 1, background: "rgba(242,237,223,.2)" }} />
+
+        <div style={{ position: "absolute", top: 24, left: 30, display: "flex", gap: 10, fontSize: 14, fontWeight: 700 }}>
+          PARTH.PARWANI <span style={{ opacity: 0.56 }}>©26</span>
+        </div>
+        <div style={{ position: "absolute", top: 24, left: 520, display: "flex", fontSize: 13, fontWeight: 700 }}>
+          SELECTED WORK
+        </div>
+        <div style={{ position: "absolute", top: 24, right: 30, display: "flex", fontSize: 13, fontWeight: 700 }}>
+          DESIGN / ENGINEERING
+        </div>
+
         <div
           style={{
             position: "absolute",
-            top: -260,
-            left: -120,
-            width: 620,
-            height: 620,
-            borderRadius: 999,
-            background: "#d96448",
-            filter: "blur(90px)",
-            opacity: 0.68,
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            right: -240,
-            bottom: -320,
-            width: 720,
-            height: 720,
-            borderRadius: 999,
-            background: "#4f78ad",
-            filter: "blur(110px)",
-            opacity: 0.58,
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            top: 118,
-            left: 485,
+            top: 85,
+            left: 450,
             display: "flex",
-            width: 360,
-            height: 360,
+            width: 300,
+            height: 300,
             alignItems: "center",
             justifyContent: "center",
-            border: "1px solid rgba(240,234,219,.28)",
+            border: "1px solid rgba(242,237,223,.52)",
             borderRadius: 999,
-            background: "radial-gradient(circle at 40% 50%, #df694b 0 9%, transparent 28%), radial-gradient(circle at 67% 40%, #5d82b6 0 14%, transparent 36%), #111b32",
-            boxShadow: "0 40px 110px rgba(2,7,20,.45)",
-            fontSize: 74,
-            fontWeight: 700,
-            letterSpacing: -9,
+            background: "radial-gradient(circle, rgba(7,12,43,.92) 0 34%, transparent 35% 49%, rgba(242,237,223,.22) 50% 50.5%, transparent 51% 65%, rgba(242,237,223,.14) 66% 66.5%, transparent 67%)",
+            fontSize: 68,
+            fontWeight: 800,
+            letterSpacing: -8,
           }}
         >
           PP
         </div>
-        <div
-          style={{
-            position: "absolute",
-            top: 34,
-            left: 42,
-            display: "flex",
-            alignItems: "center",
-            gap: 13,
-            fontSize: 19,
-            fontWeight: 700,
-          }}
-        >
-          <span
-            style={{
-              display: "flex",
-              width: 50,
-              height: 50,
-              alignItems: "center",
-              justifyContent: "center",
-              border: "1px solid #f0eadb",
-              borderRadius: 999,
-              fontSize: 13,
-            }}
-          >
-            P/P
-          </span>
-          Parth Parwani
+
+        <div style={{ position: "absolute", top: 92, left: 30, display: "flex", width: 340, flexDirection: "column", fontFamily: "monospace", fontSize: 13, lineHeight: 1.35, opacity: 0.78 }}>
+          <span>CREATIVE DEVELOPER</span><span>UI ENGINEER</span><span>DIGITAL PRODUCT DESIGNER</span>
         </div>
-        <div
-          style={{
-            position: "absolute",
-            top: 92,
-            left: 38,
-            display: "flex",
-            fontSize: 190,
-            fontWeight: 800,
-            letterSpacing: -17,
-            lineHeight: 0.8,
-          }}
-        >
-          PARTH
+        <div style={{ position: "absolute", top: 112, right: 38, display: "flex", width: 235, fontFamily: "monospace", fontSize: 12, lineHeight: 1.38, opacity: 0.72 }}>
+          REAL PRODUCTS, DISTINCT SYSTEMS AND INTERACTIONS BUILT WITH INTENT.
         </div>
-        <div
-          style={{
-            position: "absolute",
-            right: 38,
-            bottom: 78,
-            display: "flex",
-            fontSize: 176,
-            fontWeight: 800,
-            letterSpacing: -16,
-            lineHeight: 0.8,
-          }}
-        >
-          PARWANI
+
+        <div style={{ position: "absolute", left: 30, bottom: 128, display: "flex", fontSize: 116, fontWeight: 900, letterSpacing: -10, lineHeight: 0.76 }}>
+          CRAFTED TO MOVE.
         </div>
-        <div
-          style={{
-            position: "absolute",
-            right: 46,
-            bottom: 29,
-            display: "flex",
-            fontSize: 16,
-            letterSpacing: 2.4,
-            textTransform: "uppercase",
-            opacity: 0.76,
-          }}
-        >
-          Creative Developer · UI Engineer · Founder
+        <div style={{ position: "absolute", right: 30, bottom: 30, display: "flex", fontSize: 116, fontWeight: 900, letterSpacing: -10, lineHeight: 0.76 }}>
+          BUILT TO WORK.
+        </div>
+
+        <div style={{ position: "absolute", top: 304, left: -34, display: "flex", width: 90, height: 22, transform: "rotate(-90deg)", alignItems: "center", justifyContent: "center", background: "#ff6a00", color: "#111", fontFamily: "monospace", fontSize: 9, fontWeight: 800 }}>
+          BUILT IN CODE
         </div>
       </div>
     ),

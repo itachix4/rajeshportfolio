@@ -6,12 +6,12 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://parthparwani.com"),
   title: "Parth Parwani — Creative Developer, UI Engineer & Founder",
   description:
-    "Parth Parwani designs and engineers distinctive digital products, immersive interfaces and premium websites. Founder of ForgeLane.",
+    "Selected work by Parth Parwani, a creative developer, UI engineer and ForgeLane founder—Krish Veneer, North Star, Finance for Teens and PARTH LAB OS.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Parth Parwani — Creative Developer & UI Engineer",
     description:
-      "Distinctive digital products, immersive interfaces and premium websites—designed and engineered by Parth Parwani.",
+      "Selected digital products and premium web experiences for Krish Veneer, North Star, Finance for Teens, ForgeLane and PARTH LAB OS.",
     url: "/",
     siteName: "Parth Parwani",
     type: "website",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Parth Parwani — Creative Developer & UI Engineer",
-    description: "Founder of ForgeLane. Design, code and strategy in one product-minded practice.",
+    description: "Selected work across brand, product, interaction and frontend engineering by Parth Parwani.",
     images: ["/opengraph-image"],
   },
 };
@@ -35,8 +35,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0b1830",
-  colorScheme: "dark",
+  themeColor: "#163ee8",
+  colorScheme: "dark light",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
