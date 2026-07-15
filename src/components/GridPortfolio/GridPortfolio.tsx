@@ -1,33 +1,43 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import {
   type CSSProperties,
-  type PointerEvent as ReactPointerEvent,
+  type RefObject,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, Menu, X } from "lucide-react";
+import LightTunnel from "./LightTunnel";
 import { PROJECTS, type PortfolioProject } from "./projectData";
 import { CONTACT_EMAIL } from "../NewSite/data";
 
-type Palette = "signal" | "paper" | "night";
+const KineticMark = dynamic(() => import("./KineticMark"), {
+  ssr: false,
+  loading: () => <div className="motionfolio-mark-loading" aria-hidden="true">PP</div>,
+});
 
-const PALETTES: Array<{ id: Palette; label: string }> = [
-  { id: "signal", label: "A" },
-  { id: "paper", label: "B" },
-  { id: "night", label: "C" },
+const clamp = (value: number, min = 0, max = 1) => Math.min(Math.max(value, min), max);
+const smoothstep = (edgeA: number, edgeB: number, value: number) => {
+  const progress = clamp((value - edgeA) / Math.max(edgeB - edgeA, 0.0001));
+  return progress * progress * (3 - 2 * progress);
+};
+
+const NAVIGATION = [
+  { label: "Work", href: "#work" },
+  { label: "Profile", href: "#profile" },
+  { label: "Lab ↗", href: "/lab" },
+  { label: "Contact", href: "#contact" },
 ];
 
 const useClock = () => {
   const [time, setTime] = useState("--:--");
-
   useEffect(() => {
-    const update = () => {
+    const update = () =>
       setTime(
         new Intl.DateTimeFormat("en-GB", {
           hour: "2-digit",
@@ -36,223 +46,210 @@ const useClock = () => {
           timeZone: "Asia/Kolkata",
         }).format(new Date()),
       );
-    };
     update();
     const timer = window.setInterval(update, 30_000);
     return () => window.clearInterval(timer);
   }, []);
-
   return time;
 };
 
-const useScrollReadout = () => {
-  const [readout, setReadout] = useState({ scroll: 0, width: 0, height: 0 });
-  const frame = useRef<number | null>(null);
+const GridOverlay = () => (
+  <div className="motionfolio-grid" aria-hidden="true">
+    {Array.from({ length: 5 }, (_, index) => <i key={index} />)}
+  </div>
+);
+
+const ExperienceLoader = () => (
+  <div className="motionfolio-loader" aria-hidden="true">
+    <div>
+      <span>PARTH.PARWANI / PORTFOLIO SYSTEM</span>
+      <i><b /></i>
+      <small>Loading authored interactions</small>
+    </div>
+  </div>
+);
+
+const useSmoothWheel = (enabled: boolean) => {
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
+    if (!enabled || reduceMotion || !window.matchMedia("(min-width: 901px) and (pointer: fine)").matches) return;
+    let current = window.scrollY;
+    let target = window.scrollY;
+    let frame: number | null = null;
+    let driving = false;
+
+    const tick = () => {
+      const distance = target - current;
+      current += distance * 0.115;
+      driving = true;
+      window.scrollTo(0, current);
+      driving = false;
+      if (Math.abs(distance) > 0.45) frame = requestAnimationFrame(tick);
+      else {
+        current = target;
+        window.scrollTo(0, target);
+        frame = null;
+      }
+    };
+
+    const onWheel = (event: WheelEvent) => {
+      const source = event.target instanceof Element ? event.target : null;
+      if (event.ctrlKey || event.metaKey || source?.closest(".gridfolio-story, .parth-assistant")) return;
+      event.preventDefault();
+      const maximum = Math.max(document.documentElement.scrollHeight - window.innerHeight, 0);
+      target = clamp(target + event.deltaY, 0, maximum);
+      if (frame === null) frame = requestAnimationFrame(tick);
+    };
+
+    const onScroll = () => {
+      if (!driving && frame === null) {
+        current = window.scrollY;
+        target = window.scrollY;
+      }
+    };
+
+    window.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("scroll", onScroll);
+      if (frame !== null) cancelAnimationFrame(frame);
+    };
+  }, [enabled, reduceMotion]);
+};
+
+const useScrollChoreography = ({
+  rootRef,
+  introRef,
+  finaleRef,
+  contactRef,
+  finaleProgress,
+}: {
+  rootRef: RefObject<HTMLDivElement | null>;
+  introRef: RefObject<HTMLElement | null>;
+  finaleRef: RefObject<HTMLElement | null>;
+  contactRef: RefObject<HTMLElement | null>;
+  finaleProgress: React.MutableRefObject<number>;
+}) => {
+  const [readout, setReadout] = useState({ scroll: 0, width: 0, height: 0 });
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    document.documentElement.classList.add("motion-home");
+    let frame: number | null = null;
+    let lastReadout = -1;
+
+    const sectionProgress = (element: HTMLElement | null) => {
+      if (!element) return 0;
+      const rect = element.getBoundingClientRect();
+      return clamp(-rect.top / Math.max(rect.height - window.innerHeight, 1));
+    };
+
     const update = () => {
-      if (frame.current !== null) return;
-      frame.current = window.requestAnimationFrame(() => {
-        const max = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
-        setReadout({
-          scroll: Math.round((window.scrollY / max) * 100),
-          width: window.innerWidth,
-          height: window.innerHeight,
-        });
-        frame.current = null;
+      frame = null;
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+      const intro = sectionProgress(introRef.current);
+      const heroExit = smoothstep(0.08, 0.47, intro);
+      const heroFade = smoothstep(0.31, 0.53, intro);
+      const profileEnter = smoothstep(0.27, 0.59, intro);
+      const profileExit = smoothstep(0.88, 1, intro);
+
+      root.style.setProperty("--hero-y", `${-68 * heroExit}vh`);
+      root.style.setProperty("--hero-opacity", `${1 - heroFade}`);
+      root.style.setProperty("--mark-y", `${-46 * heroExit}vh`);
+      root.style.setProperty("--mark-scale", `${1 - heroExit * 0.13}`);
+      root.style.setProperty("--profile-y", `${(1 - profileEnter) * 72 - profileExit * 34}vh`);
+      root.style.setProperty("--profile-opacity", `${profileEnter * (1 - profileExit)}`);
+      root.style.setProperty("--intro-dark", `${smoothstep(0.32, 0.55, intro)}`);
+
+      root.querySelectorAll<HTMLElement>("[data-project-card]").forEach((card) => {
+        const rect = card.getBoundingClientRect();
+        const centerDistance = (rect.top + rect.height * 0.5 - viewportHeight * 0.5) / Math.max(viewportHeight, 1);
+        const magnitude = Math.min(Math.abs(centerDistance), 1.4);
+        card.style.setProperty("--project-rotate", `${clamp(centerDistance * -7.5, -8, 8)}deg`);
+        card.style.setProperty("--project-shift", `${clamp(centerDistance * -28, -34, 34)}px`);
+        card.style.setProperty("--project-scale", `${1 - Math.min(magnitude * 0.055, 0.07)}`);
+        card.style.setProperty("--project-radius", `${Math.min(magnitude * 58, 52)}px`);
       });
+
+      const finale = sectionProgress(finaleRef.current);
+      finaleProgress.current = finale;
+      finaleRef.current?.style.setProperty("--finale-progress", `${finale}`);
+      if (finaleRef.current) {
+        finaleRef.current.dataset.phase = finale < 0.34 ? "purpose" : finale < 0.69 ? "human" : "principles";
+      }
+
+      const contact = sectionProgress(contactRef.current);
+      contactRef.current?.style.setProperty("--contact-progress", `${contact}`);
+
+      const maximum = Math.max(document.documentElement.scrollHeight - viewportHeight, 1);
+      const percentage = Math.round((window.scrollY / maximum) * 100);
+      root.style.setProperty("--site-scroll", `${percentage / 100}`);
+      if (percentage !== lastReadout) {
+        lastReadout = percentage;
+        setReadout({ scroll: percentage, width: viewportWidth, height: viewportHeight });
+      }
+    };
+
+    const requestUpdate = () => {
+      if (frame === null) frame = requestAnimationFrame(update);
     };
     update();
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
     return () => {
-      window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
-      if (frame.current !== null) window.cancelAnimationFrame(frame.current);
+      document.documentElement.classList.remove("motion-home");
+      window.removeEventListener("scroll", requestUpdate);
+      window.removeEventListener("resize", requestUpdate);
+      if (frame !== null) cancelAnimationFrame(frame);
     };
-  }, []);
+  }, [contactRef, finaleProgress, finaleRef, introRef, rootRef]);
 
   return readout;
 };
 
-const GridOverlay = () => (
-  <div className="gridfolio-grid" aria-hidden="true">
-    {Array.from({ length: 4 }, (_, index) => (
-      <i key={index} />
-    ))}
-  </div>
-);
-
-const FieldCanvas = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const pointer = useRef({ x: 0.5, y: 0.5, tx: 0.5, ty: 0.5 });
-  const frame = useRef<number | null>(null);
-  const visible = useRef(true);
-  const reduceMotion = useReducedMotion();
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const context = canvas.getContext("2d");
-    if (!context) return;
-
-    const observer = new IntersectionObserver(([entry]) => {
-      visible.current = entry.isIntersecting;
-      if (entry.isIntersecting && !reduceMotion && frame.current === null) {
-        frame.current = window.requestAnimationFrame(draw);
-      }
-    });
-    observer.observe(canvas);
-
-    const respondToPointer = (event: PointerEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      pointer.current.tx = (event.clientX - rect.left) / Math.max(rect.width, 1);
-      pointer.current.ty = (event.clientY - rect.top) / Math.max(rect.height, 1);
-    };
-    canvas.addEventListener("pointermove", respondToPointer, { passive: true });
-
-    const draw = (now = 0) => {
-      frame.current = null;
-      const rect = canvas.getBoundingClientRect();
-      const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
-      const width = Math.max(Math.round(rect.width * ratio), 1);
-      const height = Math.max(Math.round(rect.height * ratio), 1);
-      if (canvas.width !== width || canvas.height !== height) {
-        canvas.width = width;
-        canvas.height = height;
-      }
-      context.setTransform(ratio, 0, 0, ratio, 0, 0);
-      context.clearRect(0, 0, rect.width, rect.height);
-
-      pointer.current.x += (pointer.current.tx - pointer.current.x) * 0.055;
-      pointer.current.y += (pointer.current.ty - pointer.current.y) * 0.055;
-      const cx = rect.width * (0.5 + (pointer.current.x - 0.5) * 0.08);
-      const cy = rect.height * (0.49 + (pointer.current.y - 0.5) * 0.06);
-      const shortest = Math.min(rect.width, rect.height);
-      const lines = rect.width < 600 ? 44 : 78;
-      const phase = reduceMotion ? 0 : now * 0.00022;
-
-      context.lineWidth = 1;
-      for (let index = 0; index < lines; index += 1) {
-        const progress = index / lines;
-        const angle = progress * Math.PI * 2 + phase;
-        const pulse = Math.sin(angle * 3 + phase * 7) * shortest * 0.022;
-        const inner = shortest * (0.19 + progress * 0.045) + pulse;
-        const outer = shortest * (0.42 + Math.sin(angle * 2 - phase * 4) * 0.035);
-        const bend = (pointer.current.x - 0.5) * shortest * Math.sin(angle) * 0.16;
-        const x1 = cx + Math.cos(angle) * inner;
-        const y1 = cy + Math.sin(angle) * inner * 0.72;
-        const x2 = cx + Math.cos(angle) * outer + bend;
-        const y2 = cy + Math.sin(angle) * outer * 0.76;
-        context.beginPath();
-        context.moveTo(x1, y1);
-        context.quadraticCurveTo(
-          cx + Math.cos(angle + 0.18) * outer * 0.78,
-          cy + Math.sin(angle - 0.12) * outer * 0.38,
-          x2,
-          y2,
-        );
-        context.strokeStyle = `rgba(244, 239, 220, ${0.12 + progress * 0.42})`;
-        context.stroke();
-      }
-
-      if (!reduceMotion && visible.current) frame.current = window.requestAnimationFrame(draw);
-    };
-
-    draw();
-    return () => {
-      observer.disconnect();
-      canvas.removeEventListener("pointermove", respondToPointer);
-      if (frame.current !== null) window.cancelAnimationFrame(frame.current);
-    };
-  }, [reduceMotion]);
-
-  return <canvas ref={canvasRef} className="gridfolio-artifact__canvas" aria-hidden="true" />;
-};
-
-const HeroArtifact = () => {
-  const artifactRef = useRef<HTMLDivElement>(null);
-  const reduceMotion = useReducedMotion();
-  const frame = useRef<number | null>(null);
-
-  const handlePointer = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (reduceMotion || frame.current !== null) return;
-    const x = event.clientX;
-    const y = event.clientY;
-    frame.current = window.requestAnimationFrame(() => {
-      const rect = artifactRef.current?.getBoundingClientRect();
-      if (rect) {
-        const rx = ((y - rect.top) / rect.height - 0.5) * -7;
-        const ry = ((x - rect.left) / rect.width - 0.5) * 9;
-        artifactRef.current?.style.setProperty("--artifact-rx", `${rx}deg`);
-        artifactRef.current?.style.setProperty("--artifact-ry", `${ry}deg`);
-      }
-      frame.current = null;
-    });
-  };
-
-  useEffect(
-    () => () => {
-      if (frame.current !== null) window.cancelAnimationFrame(frame.current);
-    },
-    [],
-  );
-
-  return (
-    <div ref={artifactRef} className="gridfolio-artifact" onPointerMove={handlePointer}>
-      <FieldCanvas />
-      <div className="gridfolio-artifact__portrait">
-        <Image
-          src="/images/parth-digital-twin-960.jpg"
-          alt="A stylised digital portrait of Parth Parwani"
-          fill
-          priority
-          sizes="(max-width: 720px) 72vw, 38vw"
-        />
-        <span className="gridfolio-artifact__scan" aria-hidden="true" />
-      </div>
-      <span className="gridfolio-artifact__stamp gridfolio-artifact__stamp--one">DESIGN / CODE</span>
-      <span className="gridfolio-artifact__stamp gridfolio-artifact__stamp--two">17 / FOUNDER</span>
-      <span className="gridfolio-artifact__cursor" aria-hidden="true">
-        <b>PP</b>
-      </span>
-    </div>
-  );
-};
-
-const ProjectPreview = ({ project, onOpen, onTone }: { project: PortfolioProject; onOpen: () => void; onTone: () => void }) => (
-  <motion.article
-    className={`gridfolio-project gridfolio-project--${project.id}`}
+const ProjectPreview = ({
+  project,
+  index,
+  onOpen,
+  onTone,
+}: {
+  project: PortfolioProject;
+  index: number;
+  onOpen: () => void;
+  onTone: () => void;
+}) => (
+  <article
+    className={`motionfolio-project motionfolio-project--${project.id}`}
+    data-project-card
     style={{ "--project-accent": project.accent, "--project-surface": project.surface } as CSSProperties}
-    initial={false}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: "-10%" }}
-    transition={{ duration: 0.78, ease: [0.16, 1, 0.3, 1] }}
   >
-    <div className="gridfolio-project__head">
+    <div className="motionfolio-project__meta">
       <span>{project.index}</span>
-      <p>{project.category}</p>
+      <span>{project.category}</span>
       <span>{project.year}</span>
     </div>
-    <button
-      className="gridfolio-project__visual"
-      type="button"
-      onClick={onOpen}
-      onPointerEnter={onTone}
-      aria-label={`Open ${project.title} project story`}
-    >
-      <Image src={project.image} alt={`${project.title} website preview`} fill sizes="(max-width: 800px) 100vw, 74vw" />
-      <span className="gridfolio-project__veil" aria-hidden="true" />
-      <span className="gridfolio-project__open">Open story <ArrowUpRight size={16} /></span>
+    <button className="motionfolio-project__visual" type="button" onClick={onOpen} onPointerEnter={onTone} aria-label={`Open ${project.title} project story`}>
+      <Image
+        src={project.image}
+        alt={`${project.title} website preview`}
+        fill
+        sizes={index === 0 ? "(max-width: 700px) 100vw, 82vw" : "(max-width: 700px) 100vw, 58vw"}
+      />
+      <span className="motionfolio-project__shade" aria-hidden="true" />
+      <span className="motionfolio-project__open">Open story <ArrowUpRight size={16} /></span>
     </button>
-    <div className="gridfolio-project__title">
+    <div className="motionfolio-project__caption">
       <h3>{project.title}</h3>
       <p>{project.summary}</p>
       <a href={project.liveUrl} target={project.liveUrl.startsWith("http") ? "_blank" : undefined} rel="noreferrer">
         Visit live <ArrowUpRight size={16} aria-hidden="true" />
       </a>
     </div>
-  </motion.article>
+  </article>
 );
 
 const ProjectStory = ({
@@ -279,20 +276,17 @@ const ProjectStory = ({
       if (event.key === "Escape") onClose();
       if (event.key === "ArrowLeft") onMove(-1);
       if (event.key === "ArrowRight") onMove(1);
-      if (event.key === "Tab") {
-        const focusable = Array.from(
-          dialogRef.current?.querySelectorAll<HTMLElement>("a[href], button:not([disabled]), [tabindex]:not([tabindex='-1'])") ?? [],
-        );
-        if (!focusable.length) return;
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault();
-          last.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault();
-          first.focus();
-        }
+      if (event.key !== "Tab") return;
+      const focusable = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>("a[href], button:not([disabled])") ?? []);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
       }
     };
     window.addEventListener("keydown", handleKey);
@@ -321,29 +315,15 @@ const ProjectStory = ({
         <p>Selected work / Project story</p>
         <button ref={closeRef} type="button" onClick={onClose} aria-label="Close project story"><X size={19} /></button>
       </header>
-
       <div className="gridfolio-story__scroll">
         <section className="gridfolio-story__hero">
-          <div>
-            <span>{project.category}</span>
-            <h2 id="project-story-title">{project.title}</h2>
-          </div>
+          <div><span>{project.category}</span><h2 id="project-story-title">{project.title}</h2></div>
           <p>{project.summary}</p>
         </section>
-
-        <div className="gridfolio-story__image">
-          <Image src={project.image} alt={`${project.title} website home page`} fill sizes="100vw" priority />
-        </div>
-
+        <div className="gridfolio-story__image"><Image src={project.image} alt={`${project.title} website home page`} fill sizes="100vw" priority /></div>
         <section className="gridfolio-story__details">
-          <div>
-            <span>Challenge</span>
-            <p>{project.challenge}</p>
-          </div>
-          <div>
-            <span>Result</span>
-            <p>{project.outcome}</p>
-          </div>
+          <div><span>Challenge</span><p>{project.challenge}</p></div>
+          <div><span>Result</span><p>{project.outcome}</p></div>
           <aside>
             <dl>
               <div><dt>Role</dt><dd>{project.role}</dd></div>
@@ -351,13 +331,10 @@ const ProjectStory = ({
               <div><dt>Technology</dt><dd>{project.stack.join(" · ")}</dd></div>
               <div><dt>Year</dt><dd>{project.year}</dd></div>
             </dl>
-            <a href={project.liveUrl} target={project.liveUrl.startsWith("http") ? "_blank" : undefined} rel="noreferrer">
-              Launch project <ArrowUpRight size={18} />
-            </a>
+            <a href={project.liveUrl} target={project.liveUrl.startsWith("http") ? "_blank" : undefined} rel="noreferrer">Launch project <ArrowUpRight size={18} /></a>
           </aside>
         </section>
       </div>
-
       <footer className="gridfolio-story__footer">
         <button type="button" onClick={() => onMove(-1)}><ArrowLeft size={17} /> Previous</button>
         <span>{String(projectIndex + 1).padStart(2, "0")}—{String(PROJECTS.length).padStart(2, "0")}</span>
@@ -368,228 +345,167 @@ const ProjectStory = ({
 };
 
 const GridPortfolio = () => {
-  const [paletteIndex, setPaletteIndex] = useState(0);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const introRef = useRef<HTMLElement>(null);
+  const finaleRef = useRef<HTMLElement>(null);
+  const contactRef = useRef<HTMLElement>(null);
+  const finaleProgress = useRef(0);
+  const audioContext = useRef<AudioContext | null>(null);
   const [sound, setSound] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
-  const audioContext = useRef<AudioContext | null>(null);
   const clock = useClock();
-  const readout = useScrollReadout();
-  const palette = PALETTES[paletteIndex];
+  const readout = useScrollChoreography({ rootRef, introRef, finaleRef, contactRef, finaleProgress });
+  useSmoothWheel(!activeProjectId);
+
   const activeProjectIndex = PROJECTS.findIndex((project) => project.id === activeProjectId);
   const activeProject = activeProjectIndex >= 0 ? PROJECTS[activeProjectIndex] : null;
 
-  const playTone = useCallback(
-    (frequency = 310) => {
-      if (!sound) return;
-      const Context = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (!Context) return;
-      audioContext.current ??= new Context();
-      const context = audioContext.current;
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
-      oscillator.type = "sine";
-      oscillator.frequency.value = frequency;
-      gain.gain.setValueAtTime(0.0001, context.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.025, context.currentTime + 0.012);
-      gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.16);
-      oscillator.connect(gain).connect(context.destination);
-      oscillator.start();
-      oscillator.stop(context.currentTime + 0.18);
-    },
-    [sound],
-  );
+  const playTone = useCallback((frequency = 310) => {
+    if (!sound) return;
+    const Context = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Context) return;
+    audioContext.current ??= new Context();
+    const context = audioContext.current;
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = "sine";
+    oscillator.frequency.value = frequency;
+    gain.gain.setValueAtTime(0.0001, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.022, context.currentTime + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.14);
+    oscillator.connect(gain).connect(context.destination);
+    oscillator.start();
+    oscillator.stop(context.currentTime + 0.16);
+  }, [sound]);
 
-  useEffect(
-    () => () => {
-      void audioContext.current?.close();
-    },
-    [],
-  );
+  useEffect(() => () => { void audioContext.current?.close(); }, []);
 
   const moveProject = useCallback((direction: -1 | 1) => {
     setActiveProjectId((current) => {
       const index = PROJECTS.findIndex((project) => project.id === current);
-      const nextIndex = (index + direction + PROJECTS.length) % PROJECTS.length;
-      return PROJECTS[nextIndex].id;
+      return PROJECTS[(index + direction + PROJECTS.length) % PROJECTS.length].id;
     });
   }, []);
   const closeProject = useCallback(() => setActiveProjectId(null), []);
 
-  const openAssistant = () => window.dispatchEvent(new Event("parth:assistant-open"));
-
-  const navigation = useMemo(
-    () => [
-      { label: "Work", href: "#work" },
-      { label: "Profile", href: "#profile" },
-      { label: "Lab ↗", href: "/lab" },
-      { label: "Contact", href: "#contact" },
-    ],
-    [],
-  );
-
   return (
-    <div className="gridfolio" data-palette={palette.id}>
+    <div ref={rootRef} className="motionfolio">
       <a className="skip-link" href="#main-content">Skip to content</a>
+      <ExperienceLoader />
       <GridOverlay />
 
-      <header className="gridfolio-header">
-        <a className="gridfolio-brand" href="#top" aria-label="Parth Parwani, back to top">
-          PARTH.PARWANI <span>©26</span>
-        </a>
-        <nav className="gridfolio-nav" aria-label="Main navigation">
-          {navigation.map((item) => <a key={item.label} href={item.href}>{item.label}</a>)}
+      <header className="motionfolio-header">
+        <a className="motionfolio-brand" href="#top" aria-label="Parth Parwani, back to top">PARTH.PARWANI <span>©26</span></a>
+        <nav className="motionfolio-nav" aria-label="Main navigation">
+          {NAVIGATION.map((item) => <a key={item.label} href={item.href}>{item.label}</a>)}
         </nav>
-        <div className="gridfolio-controls">
-          <button
-            type="button"
-            onClick={() => setPaletteIndex((current) => (current + 1) % PALETTES.length)}
-            aria-label={`Change theme. Current theme ${palette.label}`}
-          >
-            Theme [{palette.label}]
-          </button>
-          <button
-            type="button"
-            onClick={() => setSound((current) => !current)}
-            aria-label={sound ? "Disable interface sound" : "Enable interface sound"}
-            aria-pressed={sound}
-          >
-            Sound [{sound ? "+" : "−"}]
-          </button>
+        <div className="motionfolio-controls">
+          <button type="button" onClick={() => window.dispatchEvent(new Event("parth:assistant-open"))}>Ask portfolio ↗</button>
+          <button type="button" onClick={() => setSound((current) => !current)} aria-pressed={sound}>Sound [{sound ? "+" : "−"}]</button>
         </div>
-        <button
-          className="gridfolio-menu"
-          type="button"
-          onClick={() => setMobileMenu((current) => !current)}
-          aria-expanded={mobileMenu}
-          aria-controls="mobile-navigation"
-          aria-label={mobileMenu ? "Close navigation" : "Open navigation"}
-        >
+        <button className="motionfolio-menu" type="button" onClick={() => setMobileMenu((current) => !current)} aria-expanded={mobileMenu} aria-controls="mobile-navigation" aria-label={mobileMenu ? "Close navigation" : "Open navigation"}>
           {mobileMenu ? <X size={20} /> : <Menu size={20} />}
         </button>
       </header>
 
       <AnimatePresence>
         {mobileMenu && (
-          <motion.nav
-            id="mobile-navigation"
-            className="gridfolio-mobile-nav"
-            aria-label="Mobile navigation"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-          >
-            {navigation.map((item, index) => (
-              <a key={item.label} href={item.href} onClick={() => setMobileMenu(false)}>
-                <span>0{index + 1}</span>{item.label}
-              </a>
-            ))}
-            <div>
-              <button type="button" onClick={() => setPaletteIndex((current) => (current + 1) % PALETTES.length)}>Theme [{palette.label}]</button>
-              <button type="button" onClick={() => setSound((current) => !current)}>Sound [{sound ? "+" : "−"}]</button>
-            </div>
+          <motion.nav id="mobile-navigation" className="motionfolio-mobile-nav" aria-label="Mobile navigation" initial={{ opacity: 0, y: -18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -18 }}>
+            {NAVIGATION.map((item, index) => <a key={item.label} href={item.href} onClick={() => setMobileMenu(false)}><span>0{index + 1}</span>{item.label}</a>)}
+            <button type="button" onClick={() => setSound((current) => !current)}>Sound [{sound ? "+" : "−"}]</button>
           </motion.nav>
         )}
       </AnimatePresence>
 
-      <aside className="gridfolio-rail" aria-hidden="true">
-        <span>PP / BUILT IN CODE</span>
-      </aside>
+      <aside className="motionfolio-rail" aria-hidden="true"><span>PP / BUILT IN CODE</span></aside>
+      <div className="motionfolio-scrollbar" aria-hidden="true"><i /></div>
 
       <main id="main-content">
-        <section id="top" className="gridfolio-hero">
-          <div className="gridfolio-hero__intro">
-            <p><span>(01)</span> Creative developer<br />UI engineer<br />Digital product designer</p>
-            <p>Thinking in systems.<br />Designing with care.<br />Shipping with intent.</p>
-            <p>Parth Parwani is a 17-year-old developer and founder building distinct digital products from strategy to final interaction.</p>
-          </div>
+        <section ref={introRef} id="top" className="motionfolio-intro-track">
+          <div className="motionfolio-intro-sticky">
+            <div className="motionfolio-intro-dark" aria-hidden="true" />
+            <section className="motionfolio-hero" aria-labelledby="hero-title">
+              <div className="motionfolio-hero__eyebrows">
+                <p><span>(01)</span> Creative Developer<br />UI Engineer<br />Digital Product Designer</p>
+                <p>Strategy → System<br />System → Interaction<br />Interaction → Product</p>
+                <p>Parth Parwani builds distinct digital products from first idea to final frame.</p>
+              </div>
+              <div className="motionfolio-hero__mark"><KineticMark /><span>AUTHORED / NOT ASSEMBLED</span><b>17 / FOUNDER</b></div>
+              <h1 id="hero-title"><span>PARTH PARWANI</span><strong>IDEAS WITH A PULSE.<br />CODE WITH A POINT.</strong></h1>
+              <div className="motionfolio-hero__foot"><a href="#work">Enter selected work <ArrowDown size={17} /></a><span>Founder, ForgeLane / Available selectively</span></div>
+            </section>
 
-          <HeroArtifact />
-
-          <h1 className="gridfolio-hero__title">
-            <span>CRAFTED TO MOVE.</span>
-            <span>BUILT TO WORK.</span>
-          </h1>
-
-          <div className="gridfolio-hero__foot">
-            <a href="#work">Explore selected work <ArrowDown size={17} /></a>
-            <span>Independent practice / Founder, ForgeLane</span>
+            <section id="profile" className="motionfolio-profile" aria-labelledby="profile-title">
+              <div className="motionfolio-profile__instrument" aria-hidden="true">
+                <div><span>BRAND</span><span>PRODUCT</span><span>CODE</span><span>MOTION</span><i /><i /><b>PP</b></div>
+                <small>ONE SYSTEM / FOUR DISCIPLINES</small>
+              </div>
+              <div className="motionfolio-profile__copy">
+                <div><span>02</span><p>Profile / Practice</p></div>
+                <p>I work where brand, product and engineering stop being separate conversations.</p>
+                <h2 id="profile-title">ONE MIND.<br />FIRST IDEA<br />TO FINAL PIXEL.</h2>
+                <ul>
+                  <li><span>01</span>Identity with behaviour</li>
+                  <li><span>02</span>Interfaces with intent</li>
+                  <li><span>03</span>Engineering that protects both</li>
+                </ul>
+              </div>
+            </section>
           </div>
         </section>
 
-        <section id="profile" className="gridfolio-profile">
-          <div className="gridfolio-section-index"><span>02</span><p>Profile / Practice</p></div>
-          <div className="gridfolio-profile__statement">
-            <p>I work where brand, product and engineering stop being separate conversations.</p>
-            <h2>ONE MIND<br />FROM FIRST IDEA<br />TO FINAL PIXEL.</h2>
-          </div>
-          <div className="gridfolio-profile__facts">
-            <article><span>01</span><strong>Design systems that give a brand its own behaviour.</strong></article>
-            <article><span>02</span><strong>Frontend engineering that protects the idea at every breakpoint.</strong></article>
-            <article><span>03</span><strong>Motion that explains hierarchy instead of competing with it.</strong></article>
-          </div>
-        </section>
-
-        <section id="work" className="gridfolio-work">
-          <div className="gridfolio-work__lead">
-            <div className="gridfolio-section-index"><span>03</span><p>Selected work / 2025—26</p></div>
-            <h2>WORK IS THE<br />ARGUMENT.</h2>
-            <p>Real products for real organisations—shown as systems, not thumbnails in identical boxes.</p>
-          </div>
-
-          <div className="gridfolio-projects">
+        <section id="work" className="motionfolio-work">
+          <header className="motionfolio-work__lead">
+            <div><span>03</span><p>Selected work / 2025—26</p></div>
+            <h2>WORK IS<br />THE ARGUMENT.</h2>
+            <p>Real organisations. Real constraints. Each product given its own visual and technical logic.</p>
+          </header>
+          <div className="motionfolio-projects">
             {PROJECTS.map((project, index) => (
               <ProjectPreview
                 key={project.id}
                 project={project}
-                onOpen={() => {
-                  playTone(260 + index * 42);
-                  setActiveProjectId(project.id);
-                }}
-                onTone={() => playTone(220 + index * 36)}
+                index={index}
+                onOpen={() => { playTone(250 + index * 38); setActiveProjectId(project.id); }}
+                onTone={() => playTone(210 + index * 34)}
               />
             ))}
           </div>
         </section>
 
-        <section className="gridfolio-method">
-          <div className="gridfolio-section-index"><span>04</span><p>How I build</p></div>
-          <div className="gridfolio-method__orbit" aria-hidden="true">
-            <span>01 STRATEGY</span><span>02 SYSTEM</span><span>03 BUILD</span><span>04 POLISH</span>
-            <i /><i /><b>PP</b>
+        <section ref={finaleRef} className="motionfolio-finale" data-phase="purpose" aria-label="Design principles">
+          <div className="motionfolio-finale__sticky">
+            <LightTunnel progress={finaleProgress} />
+            <div className="motionfolio-finale__phase motionfolio-finale__phase--purpose"><span>04 / PRINCIPLE</span><h2>ENGINEER<br />WITH PURPOSE.</h2></div>
+            <div className="motionfolio-finale__phase motionfolio-finale__phase--human"><span>04 / PRINCIPLE</span><h2>DESIGN WITH<br />A HUMAN TOUCH.</h2></div>
+            <div className="motionfolio-finale__phase motionfolio-finale__phase--principles">
+              <p>Motion should explain hierarchy.</p><p>Performance is part of the aesthetic.</p><p>Systems create room for expression.</p><p>The product must outlive the reveal.</p>
+              <strong>THE METHOD IS<br />VISIBLE IN THE RESULT.</strong>
+            </div>
           </div>
-          <h2>NOT DECORATION.<br />DIRECTION.</h2>
-          <p>A strong interface should clarify the product, sharpen the brand and make the technology disappear into the experience.</p>
-          <button type="button" onClick={openAssistant}>Ask the portfolio intelligence <ArrowUpRight size={17} /></button>
         </section>
 
-        <section id="contact" className="gridfolio-contact">
-          <div className="gridfolio-section-index"><span>05</span><p>New work / Selected collaborations</p></div>
-          <p>Have a product, brand or difficult interface that deserves more than the expected answer?</p>
-          <h2>LET’S MAKE<br />IT DISTINCT.</h2>
-          <div className="gridfolio-contact__links">
-            <a href={`mailto:${CONTACT_EMAIL}`}>Start a project <ArrowUpRight size={18} /></a>
-            <a href="https://github.com/itachix4" target="_blank" rel="noreferrer">GitHub <ArrowUpRight size={18} /></a>
-            <a href="https://forgelane.vercel.app" target="_blank" rel="noreferrer">ForgeLane <ArrowUpRight size={18} /></a>
+        <section ref={contactRef} id="contact" className="motionfolio-contact-track">
+          <div className="motionfolio-contact">
+            <div className="motionfolio-contact__mark"><KineticMark /></div>
+            <div className="motionfolio-contact__meta"><span>05</span><p>New work / Selected collaborations</p></div>
+            <p>Have a product, brand or difficult interface that deserves more than the expected answer?</p>
+            <h2>LET’S CREATE<br />SOMETHING<br />EXTRAORDINARY.</h2>
+            <div className="motionfolio-contact__links">
+              <a href={`mailto:${CONTACT_EMAIL}`}>Start a project <ArrowUpRight size={18} /></a>
+              <a href="https://github.com/itachix4" target="_blank" rel="noreferrer">GitHub <ArrowUpRight size={18} /></a>
+              <a href="https://forgelane.vercel.app" target="_blank" rel="noreferrer">ForgeLane <ArrowUpRight size={18} /></a>
+            </div>
+            <footer><span>Parth Parwani © 2026</span><span>Designed + engineered in code</span><a href="#top">Back to top ↑</a></footer>
           </div>
-          <footer><span>Parth Parwani © 2026</span><span>Designed + engineered in code</span><a href="#top">Back to top ↑</a></footer>
         </section>
       </main>
 
-      <div className="gridfolio-readout" aria-hidden="true">
-        <span>IND / {clock}</span>
-        <span>{readout.scroll}% / {readout.width}×{readout.height}</span>
-      </div>
+      <div className="motionfolio-readout" aria-hidden="true"><span>IND / {clock}</span><span>{readout.scroll}% / {readout.width}×{readout.height}</span></div>
 
       <AnimatePresence>
-        {activeProject && (
-          <ProjectStory
-            project={activeProject}
-            projectIndex={activeProjectIndex}
-            onClose={closeProject}
-            onMove={moveProject}
-          />
-        )}
+        {activeProject && <ProjectStory project={activeProject} projectIndex={activeProjectIndex} onClose={closeProject} onMove={moveProject} />}
       </AnimatePresence>
     </div>
   );

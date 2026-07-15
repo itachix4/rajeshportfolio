@@ -74,10 +74,10 @@ const KNOWLEDGE: KnowledgeEntry[] = [
   },
   {
     id: "finance-for-teens",
-    terms: ["finance for teens", "finance", "teens", "education", "financial education"],
+    terms: ["financeforteen", "finance for teen", "finance for teens", "finance", "teens", "education", "financial education"],
     answer: {
-      text: "Finance for Teens makes money fundamentals approachable for younger learners while keeping courses and programmes clear for parents and schools. The work focuses on friendly communication, simple content architecture and an easy route from curiosity to enrolment.",
-      action: { label: "View Finance for Teens", href: "https://financeforteens.com" },
+      text: "FinanceForTeen teaches the money lessons school leaves out—from investing and budgeting to taxes, credit and markets. Parth shaped it as a bold editorial learning product that treats teenagers like capable future decision-makers.",
+      action: { label: "View FinanceForTeen", href: "https://financeforteen.com" },
     },
   },
   {

@@ -6,12 +6,12 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://parthparwani.com"),
   title: "Parth Parwani — Creative Developer, UI Engineer & Founder",
   description:
-    "Selected work by Parth Parwani, a creative developer, UI engineer and ForgeLane founder—Krish Veneer, North Star, Finance for Teens and PARTH LAB OS.",
+    "Selected work by Parth Parwani, a creative developer, UI engineer and ForgeLane founder—Krish Veneer, North Star, FinanceForTeen and PARTH LAB OS.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Parth Parwani — Creative Developer & UI Engineer",
     description:
-      "Selected digital products and premium web experiences for Krish Veneer, North Star, Finance for Teens, ForgeLane and PARTH LAB OS.",
+      "Selected digital products and premium web experiences for Krish Veneer, North Star, FinanceForTeen, ForgeLane and PARTH LAB OS.",
     url: "/",
     siteName: "Parth Parwani",
     type: "website",
