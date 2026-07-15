@@ -30,3 +30,5 @@ backup/
 .env
 # TypeScript incremental build artifacts
 *.tsbuildinfo
+.vercel
+.env*
