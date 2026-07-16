@@ -71,7 +71,7 @@ export const PROJECTS: PortfolioProject[] = [
     role: "Product direction · Design · Development",
     services: ["Audience strategy", "Content architecture", "Interface design", "Responsive build"],
     stack: ["Next.js", "TypeScript", "Content systems", "Vercel"],
-    accent: "#d5a942",
+    accent: "#f2c14b",
     surface: "#080808",
   },
   {
@@ -90,7 +90,7 @@ export const PROJECTS: PortfolioProject[] = [
     role: "Founder · Brand · Product",
     services: ["Brand strategy", "Creative direction", "Design system", "Frontend"],
     stack: ["Next.js", "TypeScript", "Motion", "Vercel"],
-    accent: "#dfb865",
+    accent: "#ff6a00",
     surface: "#0a0a0a",
   },
   {
@@ -109,7 +109,7 @@ export const PROJECTS: PortfolioProject[] = [
     role: "Concept · Design · Engineering",
     services: ["Product concept", "Interaction systems", "Creative coding", "Performance"],
     stack: ["React", "Canvas", "WebGL", "Motion"],
-    accent: "#ff6a00",
+    accent: "#8fb8ff",
     surface: "#101010",
   },
 ];

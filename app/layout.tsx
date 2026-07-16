@@ -1,6 +1,29 @@
 import type { Metadata, Viewport } from "next";
+import { Archivo, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import "../src/site.css";
+
+const archivo = Archivo({
+  subsets: ["latin"],
+  axes: ["wdth"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-serif",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://parthparwani.com"),
@@ -35,13 +58,13 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#163ee8",
+  themeColor: "#173fe7",
   colorScheme: "dark light",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${archivo.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable}`}>
       <body>
         {children}
         <Analytics />
