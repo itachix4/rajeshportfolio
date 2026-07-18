@@ -4,17 +4,31 @@ import { useReducedMotion } from "motion/react";
 import { useEffect, useRef } from "react";
 
 const clamp = (value: number, min = 0, max = 1) => Math.min(Math.max(value, min), max);
+const smooth = (edgeA: number, edgeB: number, value: number) => {
+  const t = clamp((value - edgeA) / Math.max(edgeB - edgeA, 0.0001));
+  return t * t * (3 - 2 * t);
+};
 
-const LINE_COUNT = 126;
+/* Camera-space warp tunnel. Every element lives at a depth z in (NEAR..1]:
+   stars fly toward the camera leaving additive streaks, perspective rings
+   slide past on a slowly curving flight path, and a destination-out fade
+   keeps a phosphor trail of previous frames. Scroll progress steers phase
+   colour; scroll velocity feeds the warp speed. */
 
-type LineConstant = { seed: number; variation: number; hue: number; ember: boolean; width: number };
+const STAR_COUNT = 230;
+const RING_COUNT = 10;
+const NEAR = 0.06;
+const GOLDEN_ANGLE = 2.399963;
 
-const LINES: LineConstant[] = Array.from({ length: LINE_COUNT }, (_, index) => ({
-  seed: index / LINE_COUNT,
-  variation: 0.76 + ((index * 37) % 31) / 100,
-  hue: 213 + ((index * 13) % 50),
-  ember: index % 16 === 0,
-  width: (index % 5) * 0.12,
+type Star = { seed: number; angle: number; z: number; pace: number; warmBias: number; girth: number };
+
+const STARS: Star[] = Array.from({ length: STAR_COUNT }, (_, index) => ({
+  seed: index / STAR_COUNT,
+  angle: (index * GOLDEN_ANGLE) % (Math.PI * 2),
+  z: NEAR + (((index * 61) % 97) / 97) * (1 - NEAR),
+  pace: 0.55 + (((index * 29) % 53) / 53) * 0.95,
+  warmBias: ((index * 43) % 101) / 101,
+  girth: 0.7 + (((index * 17) % 7) / 7) * 1.5,
 }));
 
 const LightTunnel = ({ progress }: { progress: React.MutableRefObject<number> }) => {
@@ -30,9 +44,12 @@ const LightTunnel = ({ progress }: { progress: React.MutableRefObject<number> })
     const context = canvas.getContext("2d");
     if (!context) return;
     const node = canvas;
-    const drawingContext = context;
+    const paint = context;
+    const stars = STARS.map((star) => ({ ...star }));
     let lastProgress = -1;
-    let parity = 0;
+    let lastNow = 0;
+    let boost = 0;
+    let ringShift = 0;
 
     const observer = new IntersectionObserver(([entry]) => {
       visible.current = entry.isIntersecting;
@@ -48,17 +65,12 @@ const LightTunnel = ({ progress }: { progress: React.MutableRefObject<number> })
 
     function draw(now = 0) {
       frame.current = null;
+      const dtn = lastNow === 0 ? 1 : clamp((now - lastNow) / 16.7, 0.25, 3);
+      lastNow = now;
 
       const p = reduceMotion ? 0.48 : progress.current;
-      const pointerSettled =
-        Math.abs(pointer.current.tx - pointer.current.x) < 0.004 && Math.abs(pointer.current.ty - pointer.current.y) < 0.004;
-      const idle = Math.abs(p - lastProgress) < 0.0005 && pointerSettled;
-      parity = (parity + 1) % 2;
-      if (idle && parity === 1) {
-        /* Half-rate while nothing is moving; the ambient rotation is slow enough not to stutter. */
-        if (visible.current && !reduceMotion) frame.current = requestAnimationFrame(draw);
-        return;
-      }
+      if (lastProgress === -1) lastProgress = p;
+      boost += (clamp(Math.abs(p - lastProgress) * 260, 0, 2.2) - boost) * 0.09;
       lastProgress = p;
 
       const rect = node.getBoundingClientRect();
@@ -69,56 +81,106 @@ const LightTunnel = ({ progress }: { progress: React.MutableRefObject<number> })
         node.width = width;
         node.height = height;
       }
-      drawingContext.setTransform(ratio, 0, 0, ratio, 0, 0);
-      drawingContext.clearRect(0, 0, rect.width, rect.height);
+      paint.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+      if (reduceMotion) {
+        paint.clearRect(0, 0, rect.width, rect.height);
+      } else {
+        /* Phosphor persistence: dim what is already there instead of clearing. */
+        paint.globalCompositeOperation = "destination-out";
+        paint.fillStyle = `rgba(0, 0, 0, ${clamp(0.3 * dtn, 0.12, 0.62)})`;
+        paint.fillRect(0, 0, rect.width, rect.height);
+      }
+      paint.globalCompositeOperation = "lighter";
 
       pointer.current.x += (pointer.current.tx - pointer.current.x) * 0.055;
       pointer.current.y += (pointer.current.ty - pointer.current.y) * 0.055;
-      const centerX = rect.width * (0.5 + pointer.current.x * 0.025);
-      const centerY = rect.height * (0.48 + pointer.current.y * 0.02);
+      const centerX = rect.width * (0.5 + pointer.current.x * 0.03);
+      const centerY = rect.height * (0.48 + pointer.current.y * 0.025);
+      const minDim = Math.min(rect.width, rect.height);
       const compact = rect.width < 700;
-      const length = Math.hypot(rect.width, rect.height) * (0.75 + p * 0.35);
-      const aperture = Math.min(rect.width, rect.height) * (0.014 + p * 0.016);
-      const rotation = (reduceMotion ? 0 : now * 0.00003) + p * 0.9;
+      const scale = minDim * 0.062;
+      const speed = (0.0034 + p * 0.0078 + boost * 0.0095) * dtn;
+      const warmMix = smooth(0.24, 0.42, p) * (1 - 0.55 * smooth(0.68, 0.86, p));
+      const bendPhase = now * 0.00016 + p * 2.6;
 
-      for (let index = 0; index < LINE_COUNT; index += 1) {
-        if (compact && index % 2 === 1) continue;
-        const line = LINES[index];
-        const angle = line.seed * Math.PI * 2 + rotation;
-        const innerX = centerX + Math.cos(angle) * aperture * line.variation;
-        const innerY = centerY + Math.sin(angle) * aperture * line.variation;
-        const bend = Math.sin(angle * 3 + p * 8) * 0.12;
-        const outerX = centerX + Math.cos(angle + bend) * length * line.variation;
-        const outerY = centerY + Math.sin(angle + bend) * length * line.variation;
-        const gradient = drawingContext.createLinearGradient(innerX, innerY, outerX, outerY);
-        if (line.ember) {
-          gradient.addColorStop(0, `hsla(26, 100%, 74%, ${0.9 - line.seed * 0.2})`);
-          gradient.addColorStop(0.35, `hsla(22, 96%, 58%, ${0.4 + p * 0.26})`);
-          gradient.addColorStop(1, "hsla(18, 100%, 50%, 0)");
-        } else {
-          gradient.addColorStop(0, `hsla(${line.hue}, 100%, 76%, ${0.86 - line.seed * 0.2})`);
-          gradient.addColorStop(0.35, `hsla(${line.hue + 10}, 92%, 60%, ${0.46 + p * 0.28})`);
-          gradient.addColorStop(1, `hsla(${line.hue + 18}, 96%, 54%, 0)`);
-        }
-        drawingContext.beginPath();
-        drawingContext.moveTo(innerX, innerY);
-        drawingContext.quadraticCurveTo(
-          centerX + Math.cos(angle + bend * 0.2) * length * 0.42,
-          centerY + Math.sin(angle - bend * 0.2) * length * 0.42,
-          outerX,
-          outerY,
-        );
-        drawingContext.strokeStyle = gradient;
-        drawingContext.lineWidth = clamp(0.65 + p * 1.3 + line.width, 0.65, 2.4);
-        drawingContext.stroke();
+      const centerAt = (z: number): [number, number] => {
+        const off = (1 - z) * (1 - z);
+        return [
+          centerX + Math.sin(bendPhase) * off * rect.width * 0.07,
+          centerY + Math.cos(bendPhase * 0.83) * off * rect.height * 0.05,
+        ];
+      };
+
+      /* Tunnel rings sliding past the camera. */
+      ringShift = (ringShift + speed * 0.55) % 1;
+      const rings = compact ? RING_COUNT - 4 : RING_COUNT;
+      for (let index = 0; index < rings; index += 1) {
+        const cycle = (index / rings + ringShift) % 1;
+        const z = NEAR + (1 - cycle) * (1 - NEAR);
+        const f = 1 / z - 1;
+        const radius = f * scale;
+        if (radius < 2 || radius > minDim * 1.6) continue;
+        const [ringX, ringY] = centerAt(z);
+        const presence = Math.sin(cycle * Math.PI);
+        const warmRing = warmMix > 0.28 && index % 3 === 0;
+        paint.beginPath();
+        paint.ellipse(ringX, ringY, radius, radius * 0.86, 0, 0, Math.PI * 2);
+        paint.strokeStyle = warmRing
+          ? `hsla(24, 96%, 60%, ${presence * (0.05 + p * 0.1)})`
+          : `hsla(${222 + index * 4}, 92%, 64%, ${presence * (0.06 + p * 0.12)})`;
+        paint.lineWidth = clamp(f * 0.55, 0.5, 3.2);
+        paint.stroke();
       }
 
-      const core = drawingContext.createRadialGradient(centerX, centerY, 0, centerX, centerY, aperture * 5);
-      core.addColorStop(0, `rgba(241,236,223,${0.9 - p * 0.2})`);
-      core.addColorStop(0.15, "rgba(110,146,255,.55)");
-      core.addColorStop(1, "rgba(23,63,231,0)");
-      drawingContext.fillStyle = core;
-      drawingContext.fillRect(centerX - aperture * 5, centerY - aperture * 5, aperture * 10, aperture * 10);
+      /* Warp stars with depth-projected streaks. */
+      for (let index = 0; index < STAR_COUNT; index += 1) {
+        if (compact && index % 2 === 1) continue;
+        const star = stars[index];
+        star.z -= speed * star.pace;
+        if (star.z <= NEAR) {
+          star.z += 1 - NEAR;
+          star.angle = (star.angle + GOLDEN_ANGLE) % (Math.PI * 2);
+        }
+        const f = 1 / star.z - 1;
+        const tail = 1 / Math.min(star.z + speed * star.pace * 4.5 + 0.012, 1) - 1;
+        const [nearX, nearY] = centerAt(star.z);
+        const cosA = Math.cos(star.angle);
+        const sinA = Math.sin(star.angle) * 0.86;
+        const x = nearX + cosA * f * scale;
+        const y = nearY + sinA * f * scale;
+        const tx = nearX + cosA * tail * scale;
+        const ty = nearY + sinA * tail * scale;
+        const closeness = clamp((1 - star.z) * 1.12);
+        const alpha = closeness * closeness * (0.3 + p * 0.42);
+        const warm = star.warmBias < 0.12 + warmMix * 0.52;
+        paint.beginPath();
+        paint.moveTo(tx, ty);
+        paint.lineTo(x, y);
+        paint.strokeStyle = warm
+          ? `hsla(${20 + star.seed * 12}, 100%, ${58 + closeness * 16}%, ${alpha})`
+          : `hsla(${210 + star.seed * 44}, 96%, ${62 + closeness * 16}%, ${alpha})`;
+        paint.lineWidth = star.girth * clamp(f * 0.16, 0.4, 2.7);
+        paint.stroke();
+      }
+
+      /* Singularity core with a warm counter-halo. */
+      const coreRadius = scale * (2.6 + p * 1.6);
+      const core = paint.createRadialGradient(centerX, centerY, 0, centerX, centerY, coreRadius);
+      core.addColorStop(0, `rgba(241, 236, 223, ${0.8 - p * 0.18})`);
+      core.addColorStop(0.16, "rgba(122, 156, 255, 0.5)");
+      core.addColorStop(0.5, "rgba(34, 74, 235, 0.16)");
+      core.addColorStop(1, "rgba(23, 63, 231, 0)");
+      paint.fillStyle = core;
+      paint.fillRect(centerX - coreRadius, centerY - coreRadius, coreRadius * 2, coreRadius * 2);
+      if (warmMix > 0.05) {
+        const halo = paint.createRadialGradient(centerX, centerY, coreRadius * 0.2, centerX, centerY, coreRadius * 2.2);
+        halo.addColorStop(0, `rgba(255, 132, 40, ${0.16 * warmMix})`);
+        halo.addColorStop(1, "rgba(255, 106, 0, 0)");
+        paint.fillStyle = halo;
+        paint.fillRect(centerX - coreRadius * 2.2, centerY - coreRadius * 2.2, coreRadius * 4.4, coreRadius * 4.4);
+      }
+      paint.globalCompositeOperation = "source-over";
 
       if (visible.current && !reduceMotion) frame.current = requestAnimationFrame(draw);
     }

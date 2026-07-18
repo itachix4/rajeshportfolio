@@ -5,7 +5,7 @@ import { useReducedMotion } from "motion/react";
 import Scramble from "./Scramble";
 
 const STATS = [
-  { value: 4, pad: 2, suffix: "", label: "Products shipped" },
+  { value: 55, pad: 2, suffix: "", label: "Projects done" },
   { value: 8, pad: 2, suffix: "", label: "Lab experiments live" },
   { value: 1, pad: 2, suffix: "", label: "Studio founded" },
   { value: 100, pad: 3, suffix: "%", label: "Designed + engineered solo" },
