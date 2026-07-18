@@ -11,16 +11,24 @@ import {
   useRef,
   useState,
 } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useDragControls, useMotionValue, useReducedMotion, useTransform } from "motion/react";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, Menu, X } from "lucide-react";
 import LightTunnel from "./LightTunnel";
 import { PROJECTS, type PortfolioProject } from "./projectData";
 import { CONTACT_EMAIL } from "../NewSite/data";
+import SiteCursor from "./SiteCursor";
+import BlueprintMode from "./BlueprintMode";
+import Magnetic from "./Magnetic";
+import Scramble from "./Scramble";
+import ProcessChapter from "./ProcessChapter";
+import StatsBand from "./StatsBand";
 
 const KineticMark = dynamic(() => import("./KineticMark"), {
   ssr: false,
   loading: () => <div className="motionfolio-mark-loading" aria-hidden="true">PP</div>,
 });
+
+const DistortionMedia = dynamic(() => import("./DistortionMedia"), { ssr: false });
 
 const clamp = (value: number, min = 0, max = 1) => Math.min(Math.max(value, min), max);
 const smoothstep = (edgeA: number, edgeB: number, value: number) => {
@@ -197,7 +205,7 @@ const useScrollChoreography = ({
         card.style.setProperty("--project-shift", `${clamp(centerDistance * -28, -34, 34)}px`);
         card.style.setProperty("--project-scale", `${1 - Math.min(magnitude * 0.055, 0.07)}`);
         card.style.setProperty("--project-radius", `${Math.min(magnitude * 58, 52)}px`);
-        card.style.setProperty("--project-enter", `${smoothstep(0.97, 0.58, rect.top / Math.max(viewportHeight, 1))}`);
+        card.style.setProperty("--project-enter", `${1 - smoothstep(0.58, 0.97, rect.top / Math.max(viewportHeight, 1))}`);
         card.style.setProperty("--media-parallax", `${clamp(centerDistance * 6, -7, 7).toFixed(2)}%`);
       });
 
@@ -276,41 +284,80 @@ const ProjectPreview = ({
   index: number;
   onOpen: () => void;
   onTone: () => void;
-}) => (
-  <article
-    className={`motionfolio-project motionfolio-project--${project.id}`}
-    data-project-card
-    style={{ "--project-accent": project.accent, "--project-surface": project.surface } as CSSProperties}
-  >
-    <div className="motionfolio-project__meta">
-      <span>{project.index}</span>
-      <span>{project.category}</span>
-      <span>{project.year}</span>
-    </div>
-    <button className="motionfolio-project__visual" type="button" onClick={onOpen} onPointerEnter={onTone} onPointerMove={applyTilt} onPointerLeave={clearTilt} aria-label={`Open ${project.title} project story`}>
-      <span className="motionfolio-project__media" aria-hidden="true">
-        <Image
-          src={project.image}
-          alt=""
-          fill
-          sizes={PROJECT_SIZES[index] ?? "(max-width: 700px) 100vw, 58vw"}
-        />
-      </span>
-      <span className="motionfolio-project__shade" aria-hidden="true" />
-      <span className="motionfolio-project__open">Open story <ArrowUpRight size={16} /></span>
-    </button>
-    <div className="motionfolio-project__caption">
-      <h3>{project.title}</h3>
-      <p>{project.summary}</p>
-      <div className="motionfolio-project__aside">
-        <span>{project.stack.join(" / ")}</span>
-        <a href={project.liveUrl} target={project.liveUrl.startsWith("http") ? "_blank" : undefined} rel="noreferrer">
-          Visit live <ArrowUpRight size={16} aria-hidden="true" />
-        </a>
+}) => {
+  const reduceMotion = useReducedMotion();
+  const dragControls = useDragControls();
+  const dragY = useMotionValue(0);
+  const underOpacity = useTransform(dragY, [-22, -84], [0, 1]);
+
+  const startPeek = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (reduceMotion || event.pointerType !== "mouse") return;
+    dragControls.start(event);
+  };
+
+  return (
+    <article
+      className={`motionfolio-project motionfolio-project--${project.id}`}
+      data-project-card
+      data-blueprint="project card / drag + tilt + parallax + webgl"
+      style={{ "--project-accent": project.accent, "--project-surface": project.surface } as CSSProperties}
+    >
+      <div className="motionfolio-project__meta">
+        <span>{project.index}</span>
+        <span>{project.category}</span>
+        <span>{project.year}</span>
       </div>
-    </div>
-  </article>
-);
+      <div className="mf-peek">
+        <motion.span className="mf-peek__under" aria-hidden="true" style={{ opacity: underOpacity }}>
+          <span>Case study {project.index}</span>
+          <span>Release to open</span>
+        </motion.span>
+        <motion.div
+          className="mf-peek__lift"
+          drag="y"
+          dragListener={false}
+          dragControls={dragControls}
+          dragConstraints={{ top: -128, bottom: 0 }}
+          dragElastic={{ top: 0.3, bottom: 0 }}
+          dragMomentum={false}
+          dragSnapToOrigin
+          style={{ y: dragY, touchAction: "pan-y" }}
+          onPointerDown={startPeek}
+          onDragEnd={(_, info) => {
+            if (info.offset.y < -84) onOpen();
+          }}
+        >
+          <button className="motionfolio-project__visual" type="button" data-cursor="open" onClick={onOpen} onPointerEnter={onTone} onPointerMove={applyTilt} onPointerLeave={clearTilt} aria-label={`Open ${project.title} project story`}>
+            <span className="motionfolio-project__media" aria-hidden="true">
+              <Image
+                src={project.image}
+                alt=""
+                fill
+                sizes={PROJECT_SIZES[index] ?? "(max-width: 700px) 100vw, 58vw"}
+              />
+              <DistortionMedia src={project.image} />
+            </span>
+            <span className="motionfolio-project__shade" aria-hidden="true" />
+            <span className="mf-peek__hint" aria-hidden="true">Drag ↑ to peek</span>
+            <span className="motionfolio-project__open">Open story <ArrowUpRight size={16} /></span>
+          </button>
+        </motion.div>
+      </div>
+      <div className="motionfolio-project__caption">
+        <h3>{project.title}</h3>
+        <p>{project.summary}</p>
+        <div className="motionfolio-project__aside">
+          <span>{project.stack.join(" / ")}</span>
+          <Magnetic>
+            <a href={project.liveUrl} target={project.liveUrl.startsWith("http") ? "_blank" : undefined} rel="noreferrer">
+              Visit live <ArrowUpRight size={16} aria-hidden="true" />
+            </a>
+          </Magnetic>
+        </div>
+      </div>
+    </article>
+  );
+};
 
 const ProjectStory = ({
   project,
@@ -477,15 +524,25 @@ const GridPortfolio = () => {
       <a className="skip-link" href="#main-content">Skip to content</a>
       <ExperienceLoader />
       <GridOverlay />
+      <SiteCursor />
+      <BlueprintMode />
 
       <header className="motionfolio-header">
         <a className="motionfolio-brand" href="#top" aria-label="Parth Parwani, back to top">PARTH.PARWANI <span>©2026</span></a>
         <nav className="motionfolio-nav" aria-label="Main navigation">
-          {NAVIGATION.map((item) => <a key={item.label} href={item.href}>{item.label}</a>)}
+          {NAVIGATION.map((item) => (
+            <Magnetic key={item.label}>
+              <a href={item.href}>{item.label}</a>
+            </Magnetic>
+          ))}
         </nav>
         <div className="motionfolio-controls">
-          <button type="button" onClick={() => window.dispatchEvent(new Event("parth:assistant-open"))}>Ask the portfolio ↗</button>
-          <button type="button" onClick={() => setSound((current) => !current)} aria-pressed={sound}>Sound: {sound ? "on" : "off"}</button>
+          <Magnetic>
+            <button type="button" onClick={() => window.dispatchEvent(new Event("parth:assistant-open"))}>Ask the portfolio ↗</button>
+          </Magnetic>
+          <Magnetic>
+            <button type="button" onClick={() => setSound((current) => !current)} aria-pressed={sound}>Sound: {sound ? "on" : "off"}</button>
+          </Magnetic>
         </div>
         <button ref={menuButtonRef} className="motionfolio-menu" type="button" onClick={() => setMobileMenu((current) => !current)} aria-expanded={mobileMenu} aria-controls="mobile-navigation" aria-label={mobileMenu ? "Close navigation" : "Open navigation"}>
           {mobileMenu ? <X size={20} /> : <Menu size={20} />}
@@ -505,7 +562,7 @@ const GridPortfolio = () => {
       <div className="motionfolio-scrollbar" aria-hidden="true"><i /></div>
 
       <main id="main-content">
-        <section ref={introRef} id="top" className="motionfolio-intro-track">
+        <section ref={introRef} id="top" className="motionfolio-intro-track" data-blueprint="01 intro / sticky choreography">
           <div className="motionfolio-intro-sticky">
             <div className="motionfolio-intro-dark" aria-hidden="true" />
             <section className="motionfolio-hero" aria-labelledby="hero-title">
@@ -522,7 +579,7 @@ const GridPortfolio = () => {
                   <span className="mf-line"><i>CODE WITH A POINT.</i></span>
                 </strong>
               </h1>
-              <div className="motionfolio-hero__foot"><a href="#work">Enter selected work <ArrowDown size={17} /></a><span><b className="mf-dot" aria-hidden="true" />Founder, ForgeLane / Available selectively</span></div>
+              <div className="motionfolio-hero__foot"><Magnetic><a href="#work">Enter selected work <ArrowDown size={17} /></a></Magnetic><span><b className="mf-dot" aria-hidden="true" />Founder, ForgeLane / Available selectively</span></div>
             </section>
 
             <section id="profile" className="motionfolio-profile" aria-labelledby="profile-title">
@@ -531,7 +588,7 @@ const GridPortfolio = () => {
                 <small>ONE SYSTEM / FOUR DISCIPLINES</small>
               </div>
               <div className="motionfolio-profile__copy">
-                <div><span>02</span><p>Profile / Practice</p></div>
+                <div><span>02</span><p><Scramble text="Profile / Practice" /></p></div>
                 <p>I work where brand, product and engineering stop being separate conversations.</p>
                 <h2 id="profile-title">ONE MIND.<br />FIRST IDEA<br />TO FINAL PIXEL.</h2>
                 <ul>
@@ -544,9 +601,9 @@ const GridPortfolio = () => {
           </div>
         </section>
 
-        <section id="work" className="motionfolio-work">
+        <section id="work" className="motionfolio-work" data-blueprint="03 work / kinetic grid">
           <header className="motionfolio-work__lead">
-            <div><span>03</span><p>Featured work / 2026</p></div>
+            <div><span>03</span><p><Scramble text="Featured work / 2026" /></p></div>
             <h2>WORK IS<br />THE <em>argument.</em></h2>
             <p>One flagship, built end to end. ForgeLane carries the positioning, the identity and the engineering as a single authored system.</p>
           </header>
@@ -563,11 +620,14 @@ const GridPortfolio = () => {
           </div>
         </section>
 
-        <section ref={finaleRef} className="motionfolio-finale" data-phase="purpose" aria-label="Design principles">
+        <ProcessChapter />
+        <StatsBand />
+
+        <section ref={finaleRef} className="motionfolio-finale" data-phase="purpose" aria-label="Design principles" data-blueprint="05 finale / light tunnel">
           <div className="motionfolio-finale__sticky">
             <LightTunnel progress={finaleProgress} />
-            <div className="motionfolio-finale__phase motionfolio-finale__phase--purpose"><span>04.1 / PRINCIPLE</span><h2>ENGINEER<br />WITH PURPOSE.</h2></div>
-            <div className="motionfolio-finale__phase motionfolio-finale__phase--human"><span>04.2 / PRINCIPLE</span><h2>DESIGN WITH<br />A <em>human</em> TOUCH.</h2></div>
+            <div className="motionfolio-finale__phase motionfolio-finale__phase--purpose"><span>05.1 / PRINCIPLE</span><h2>ENGINEER<br />WITH PURPOSE.</h2></div>
+            <div className="motionfolio-finale__phase motionfolio-finale__phase--human"><span>05.2 / PRINCIPLE</span><h2>DESIGN WITH<br />A <em>human</em> TOUCH.</h2></div>
             <div className="motionfolio-finale__phase motionfolio-finale__phase--principles">
               <p>Motion should explain hierarchy.</p><p>Performance is part of the aesthetic.</p><p>Systems create room for expression.</p><p>The product must outlive the reveal.</p>
               <strong>THE METHOD IS<br />VISIBLE IN THE RESULT.</strong>
@@ -575,16 +635,16 @@ const GridPortfolio = () => {
           </div>
         </section>
 
-        <section ref={contactRef} id="contact" className="motionfolio-contact-track">
+        <section ref={contactRef} id="contact" className="motionfolio-contact-track" data-blueprint="06 contact / paper wipe">
           <div className="motionfolio-contact">
             <div className="motionfolio-contact__mark"><KineticMark variant="static" /></div>
-            <div className="motionfolio-contact__meta"><span>05</span><p>New work / Selected collaborations</p></div>
+            <div className="motionfolio-contact__meta"><span>06</span><p><Scramble text="New work / Selected collaborations" /></p></div>
             <p>Have a product, brand or difficult interface that deserves more than the expected answer?</p>
             <h2>LET’S CREATE<br />SOMETHING<br /><em>extraordinary.</em></h2>
             <div className="motionfolio-contact__links">
-              <a href={`mailto:${CONTACT_EMAIL}`}>Start a project <ArrowUpRight size={18} /></a>
-              <a href="https://github.com/itachix4" target="_blank" rel="noreferrer">GitHub <ArrowUpRight size={18} /></a>
-              <a href="https://forgelane.vercel.app" target="_blank" rel="noreferrer">ForgeLane <ArrowUpRight size={18} /></a>
+              <Magnetic><a href={`mailto:${CONTACT_EMAIL}`}>Start a project <ArrowUpRight size={18} /></a></Magnetic>
+              <Magnetic><a href="https://github.com/itachix4" target="_blank" rel="noreferrer">GitHub <ArrowUpRight size={18} /></a></Magnetic>
+              <Magnetic><a href="https://forgelane.vercel.app" target="_blank" rel="noreferrer">ForgeLane <ArrowUpRight size={18} /></a></Magnetic>
             </div>
             <footer><span>Parth Parwani ©2026</span><span>Designed + engineered by one person</span><a href="#top">Back to top ↑</a></footer>
           </div>
