@@ -13431,3 +13431,68 @@ html.mf-blueprint [data-blueprint]::before {
   .mf-process__frame { width: 100%; }
   .mf-process__bar { display: none; }
 }
+
+/* -------------------------------------------------------------------------- */
+/* Interaction layer III — kinetic hero type, velocity marquee.               */
+/* -------------------------------------------------------------------------- */
+
+/* The base block styles every h1 span as a block mono label — the kinetic
+   wrappers must stay inline at higher specificity. Words are nowrap boxes so
+   wrapping matches plain text; only characters are transformable. */
+.motionfolio-hero h1 .mf-kinetic {
+  display: inline;
+  margin: 0;
+}
+.motionfolio-hero h1 .mf-kinetic__word {
+  display: inline-block;
+  margin: 0;
+  white-space: nowrap;
+}
+.motionfolio-hero h1 .mf-kinetic__word span {
+  display: inline-block;
+  margin: 0;
+  transform-origin: 50% 78%;
+}
+
+.mf-marquee {
+  position: relative;
+  z-index: 3;
+  overflow: hidden;
+  padding: clamp(28px, 5vh, 54px) 0;
+  border-top: 1px solid var(--mf-line);
+  border-bottom: 1px solid var(--mf-line);
+  background: var(--mf-black);
+  color: var(--mf-paper);
+  transform: skewY(calc(var(--scroll-skew, 0deg) * 1.5));
+}
+.mf-marquee__row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+  width: max-content;
+  font-size: clamp(3.2rem, 7.6vw, 8rem);
+  font-weight: 900;
+  font-stretch: 115%;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+  text-transform: uppercase;
+  will-change: transform;
+}
+.mf-marquee__row--reverse { margin-top: 0.08em; opacity: 0.82; }
+.mf-marquee__row span { flex-shrink: 0; }
+.mf-marquee__row b {
+  flex-shrink: 0;
+  align-self: center;
+  font-size: 0.32em;
+  font-weight: 400;
+  color: var(--mf-orange, #ff6a00);
+}
+.mf-marquee__ghost {
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(241, 236, 223, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mf-marquee { transform: none; }
+  .mf-marquee__row { width: 100%; overflow: hidden; }
+}

@@ -22,6 +22,8 @@ import Magnetic from "./Magnetic";
 import Scramble from "./Scramble";
 import ProcessChapter from "./ProcessChapter";
 import StatsBand from "./StatsBand";
+import KineticLine from "./KineticHeadline";
+import WarpMarquee from "./WarpMarquee";
 
 const KineticMark = dynamic(() => import("./KineticMark"), {
   ssr: false,
@@ -427,7 +429,7 @@ const ProjectStory = ({
           <div><span>{project.category}</span><h2 id="project-story-title">{project.title}</h2></div>
           <p>{project.summary}</p>
         </section>
-        <div className="gridfolio-story__image"><Image src={project.image} alt={`${project.title} website home page`} fill sizes="100vw" /></div>
+        <div className="gridfolio-story__image" data-liquid-host><Image src={project.image} alt={`${project.title} website home page`} fill sizes="100vw" /><DistortionMedia src={project.image} /></div>
         <section className="gridfolio-story__details">
           <div><span>Challenge</span><p>{project.challenge}</p></div>
           <div><span>Result</span><p>{project.outcome}</p></div>
@@ -508,6 +510,16 @@ const GridPortfolio = () => {
 
   useEffect(() => () => { void audioContext.current?.close(); }, []);
 
+  useEffect(() => {
+    console.info(
+      "%cPARTH.PARWANI%c portfolio system — designed + engineered by one person.\nType %c\"forge\"%c anywhere on the page to expose the blueprint.",
+      "font: 900 14px Arial; color: #ff6a00; letter-spacing: 0.04em",
+      "color: inherit",
+      "color: #8fb8ff; font-weight: 700",
+      "color: inherit",
+    );
+  }, []);
+
   const moveProject = useCallback((direction: -1 | 1) => {
     setActiveProjectId((current) => {
       const index = PROJECTS.findIndex((project) => project.id === current);
@@ -575,8 +587,8 @@ const GridPortfolio = () => {
               <h1 id="hero-title">
                 <span>PARTH PARWANI</span>
                 <strong>
-                  <span className="mf-line"><i>IDEAS WITH A <em>pulse.</em></i></span>
-                  <span className="mf-line"><i>CODE WITH A POINT.</i></span>
+                  <span className="mf-line"><i><KineticLine text="IDEAS WITH A" /> <em>pulse.</em></i></span>
+                  <span className="mf-line"><i><KineticLine text="CODE WITH A POINT." /></i></span>
                 </strong>
               </h1>
               <div className="motionfolio-hero__foot"><Magnetic><a href="#work">Enter selected work <ArrowDown size={17} /></a></Magnetic><span><b className="mf-dot" aria-hidden="true" />Founder, ForgeLane / Available selectively</span></div>
@@ -622,6 +634,7 @@ const GridPortfolio = () => {
 
         <ProcessChapter />
         <StatsBand />
+        <WarpMarquee />
 
         <section ref={finaleRef} className="motionfolio-finale" data-phase="purpose" aria-label="Design principles" data-blueprint="05 finale / light tunnel">
           <div className="motionfolio-finale__sticky">

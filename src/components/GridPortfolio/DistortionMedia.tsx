@@ -140,7 +140,7 @@ const DistortionMedia = ({ src }: { src: string }) => {
   useEffect(() => {
     const wrap = wrapRef.current;
     if (!wrap) return;
-    hostRef.current = wrap.closest("button");
+    hostRef.current = wrap.closest("[data-liquid-host]") ?? wrap.closest("button");
     const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), { rootMargin: "18%" });
     observer.observe(wrap);
     return () => observer.disconnect();
