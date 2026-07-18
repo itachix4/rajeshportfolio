@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import {
   type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
   type RefObject,
   useCallback,
   useEffect,
@@ -81,7 +82,7 @@ const useSmoothWheel = (enabled: boolean) => {
 
     const tick = () => {
       const distance = target - current;
-      current += distance * 0.17;
+      current += distance * 0.14;
       driving = true;
       window.scrollTo(0, current);
       driving = false;
@@ -142,6 +143,8 @@ const useScrollChoreography = ({
     document.documentElement.classList.add("motion-home");
     let frame: number | null = null;
     let lastReadout = -1;
+    let lastScrollY = window.scrollY;
+    let skew = 0;
     let cards = Array.from(root.querySelectorAll<HTMLElement>("[data-project-card]"));
     const phases = finaleRef.current
       ? Array.from(finaleRef.current.querySelectorAll<HTMLElement>(".motionfolio-finale__phase"))
@@ -167,6 +170,12 @@ const useScrollChoreography = ({
       const scrollY = window.scrollY;
 
       /* Write pass. */
+      const velocity = scrollY - lastScrollY;
+      lastScrollY = scrollY;
+      skew += (clamp(velocity * 0.045, -3.2, 3.2) - skew) * 0.16;
+      if (Math.abs(skew) < 0.015) skew = 0;
+      root.style.setProperty("--scroll-skew", `${skew.toFixed(3)}deg`);
+
       const heroExit = smoothstep(0.08, 0.47, intro);
       const heroFade = smoothstep(0.31, 0.53, intro);
       const profileEnter = smoothstep(0.27, 0.59, intro);
@@ -188,6 +197,8 @@ const useScrollChoreography = ({
         card.style.setProperty("--project-shift", `${clamp(centerDistance * -28, -34, 34)}px`);
         card.style.setProperty("--project-scale", `${1 - Math.min(magnitude * 0.055, 0.07)}`);
         card.style.setProperty("--project-radius", `${Math.min(magnitude * 58, 52)}px`);
+        card.style.setProperty("--project-enter", `${smoothstep(0.97, 0.58, rect.top / Math.max(viewportHeight, 1))}`);
+        card.style.setProperty("--media-parallax", `${clamp(centerDistance * 6, -7, 7).toFixed(2)}%`);
       });
 
       finaleProgress.current = finale;
@@ -209,6 +220,9 @@ const useScrollChoreography = ({
         lastReadout = percentage;
         statsRef.current.textContent = `${String(percentage).padStart(3, "0")}% / ${viewportWidth}×${viewportHeight}`;
       }
+
+      /* Keep animating until the velocity skew settles back to rest. */
+      if (skew !== 0 && frame === null) frame = requestAnimationFrame(update);
     };
 
     const requestUpdate = () => {
@@ -230,13 +244,27 @@ const useScrollChoreography = ({
   }, [contactRef, finaleProgress, finaleRef, introRef, rootRef, statsRef]);
 };
 
-const PROJECT_SIZES = [
-  "(max-width: 700px) 100vw, 82vw",
-  "(max-width: 700px) 100vw, 55vw",
-  "(max-width: 700px) 100vw, 42vw",
-  "(max-width: 700px) 100vw, 70vw",
-  "(max-width: 700px) 100vw, 47vw",
-];
+const PROJECT_SIZES = ["(max-width: 700px) 100vw, 82vw"];
+
+/* Pointer-tracked tilt + glare on the project visual (mouse only —
+   touch flicks would fight the scroll choreography). */
+const applyTilt = (event: ReactPointerEvent<HTMLButtonElement>) => {
+  if (event.pointerType !== "mouse") return;
+  const visual = event.currentTarget;
+  const rect = visual.getBoundingClientRect();
+  const x = clamp((event.clientX - rect.left) / Math.max(rect.width, 1));
+  const y = clamp((event.clientY - rect.top) / Math.max(rect.height, 1));
+  visual.style.setProperty("--tilt-x", `${((0.5 - y) * 4.4).toFixed(2)}deg`);
+  visual.style.setProperty("--tilt-y", `${((x - 0.5) * 5.2).toFixed(2)}deg`);
+  visual.style.setProperty("--glare-x", `${(x * 100).toFixed(1)}%`);
+  visual.style.setProperty("--glare-y", `${(y * 100).toFixed(1)}%`);
+};
+
+const clearTilt = (event: ReactPointerEvent<HTMLButtonElement>) => {
+  const visual = event.currentTarget;
+  visual.style.setProperty("--tilt-x", "0deg");
+  visual.style.setProperty("--tilt-y", "0deg");
+};
 
 const ProjectPreview = ({
   project,
@@ -259,13 +287,15 @@ const ProjectPreview = ({
       <span>{project.category}</span>
       <span>{project.year}</span>
     </div>
-    <button className="motionfolio-project__visual" type="button" onClick={onOpen} onPointerEnter={onTone} aria-label={`Open ${project.title} project story`}>
-      <Image
-        src={project.image}
-        alt={`${project.title} website preview`}
-        fill
-        sizes={PROJECT_SIZES[index] ?? "(max-width: 700px) 100vw, 58vw"}
-      />
+    <button className="motionfolio-project__visual" type="button" onClick={onOpen} onPointerEnter={onTone} onPointerMove={applyTilt} onPointerLeave={clearTilt} aria-label={`Open ${project.title} project story`}>
+      <span className="motionfolio-project__media" aria-hidden="true">
+        <Image
+          src={project.image}
+          alt=""
+          fill
+          sizes={PROJECT_SIZES[index] ?? "(max-width: 700px) 100vw, 58vw"}
+        />
+      </span>
       <span className="motionfolio-project__shade" aria-hidden="true" />
       <span className="motionfolio-project__open">Open story <ArrowUpRight size={16} /></span>
     </button>
@@ -365,11 +395,13 @@ const ProjectStory = ({
           </aside>
         </section>
       </div>
-      <footer className="gridfolio-story__footer">
-        <button type="button" onClick={() => onMove(-1)}><ArrowLeft size={17} /> Previous</button>
-        <span>{String(projectIndex + 1).padStart(2, "0")}—{String(PROJECTS.length).padStart(2, "0")}</span>
-        <button type="button" onClick={() => onMove(1)}>Next <ArrowRight size={17} /></button>
-      </footer>
+      {PROJECTS.length > 1 && (
+        <footer className="gridfolio-story__footer">
+          <button type="button" onClick={() => onMove(-1)}><ArrowLeft size={17} /> Previous</button>
+          <span>{String(projectIndex + 1).padStart(2, "0")}—{String(PROJECTS.length).padStart(2, "0")}</span>
+          <button type="button" onClick={() => onMove(1)}>Next <ArrowRight size={17} /></button>
+        </footer>
+      )}
     </motion.div>
   );
 };
@@ -432,6 +464,9 @@ const GridPortfolio = () => {
   const moveProject = useCallback((direction: -1 | 1) => {
     setActiveProjectId((current) => {
       const index = PROJECTS.findIndex((project) => project.id === current);
+      /* The story's keydown listener outlives close during the exit
+         animation — never reopen from a closed state. */
+      if (index === -1) return current;
       return PROJECTS[(index + direction + PROJECTS.length) % PROJECTS.length].id;
     });
   }, []);
@@ -511,9 +546,9 @@ const GridPortfolio = () => {
 
         <section id="work" className="motionfolio-work">
           <header className="motionfolio-work__lead">
-            <div><span>03</span><p>Selected work / 2025—26</p></div>
+            <div><span>03</span><p>Featured work / 2026</p></div>
             <h2>WORK IS<br />THE <em>argument.</em></h2>
-            <p>Real organisations. Real constraints. Each product given its own visual and technical logic.</p>
+            <p>One flagship, built end to end. ForgeLane carries the positioning, the identity and the engineering as a single authored system.</p>
           </header>
           <div className="motionfolio-projects">
             {PROJECTS.map((project, index) => (

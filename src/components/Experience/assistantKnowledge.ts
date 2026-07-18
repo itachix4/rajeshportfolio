@@ -57,35 +57,11 @@ const KNOWLEDGE: KnowledgeEntry[] = [
     },
   },
   {
-    id: "krish-veneer",
-    terms: ["krish", "veneer", "plywood", "liberia", "forest", "flagship"],
-    answer: {
-      text: "Krish Veneer is Parth's flagship brand experience for a premium veneer and plywood manufacturer in Liberia. The design turns material quality, legal sourcing and an eight-stage craft process into a cinematic product narrative without losing industrial credibility.",
-      action: { label: "View Krish Veneer", href: "https://krishveneer.com" },
-    },
-  },
-  {
-    id: "north-star",
-    terms: ["north star", "northstar", "metal", "recycling", "scrap"],
-    answer: {
-      text: "North Star is an industrial brand platform for a metal trading and recycling company operating across West Africa. Parth organised sourcing, processing, logistics and sustainability into a direct service story designed to build trust and lead people toward contact.",
-      action: { label: "View North Star", href: "https://northstarlib.com" },
-    },
-  },
-  {
-    id: "finance-for-teens",
-    terms: ["financeforteen", "finance for teen", "finance for teens", "finance", "teens", "education", "financial education"],
-    answer: {
-      text: "FinanceForTeen teaches the money lessons school leaves out—from investing and budgeting to taxes, credit and markets. Parth shaped it as a bold editorial learning product that treats teenagers like capable future decision-makers.",
-      action: { label: "View FinanceForTeen", href: "https://financeforteen.com" },
-    },
-  },
-  {
     id: "favourite",
-    terms: ["favourite", "favorite", "best project", "show project", "work"],
+    terms: ["favourite", "favorite", "best project", "show project", "work", "flagship"],
     answer: {
-      text: "Krish Veneer is the strongest expression of Parth's current web craft: a premium material story translated into art direction, information hierarchy, motion and frontend execution. ForgeLane is the wider expression of his founder mindset, so the two projects show different sides of the same practice.",
-      action: { label: "Explore selected work", href: "#work" },
+      text: "ForgeLane is the work Parth leads with: the studio he founded, with positioning, identity, interface and production engineering built by one person as a single system. The technical range behind it stays visible in PARTH LAB OS, his experimental playground.",
+      action: { label: "Explore the ForgeLane case", href: "#work" },
     },
   },
   {
